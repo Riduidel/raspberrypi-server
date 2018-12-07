@@ -1,0 +1,37 @@
+- name: Check if certbot-auto already exists
+  stat:
+    path: /usr/local/sbin/certbot-auto
+  register: certbot_exists
+
+- name: Download certbot-auto
+  get_url:
+    url: https://dl.eff.org/certbot-auto
+    dest: /usr/local/sbin
+    mode: u+x
+  when: certbot_exists.stat.exists == False
+
+- name: Check if certificate already exists
+  stat:
+    path: /etc/letsencrypt/live/nicolas-delsaux.hd.free.fr/fullchain.pem
+  register: certificate_exists
+
+- name: Run certbot
+  command:
+  args:
+    argv:
+      - certbot-auto
+      - -d nicolas-delsaux.hd.free.fr
+      - --apache
+      - -n
+      - --agree-tos
+      - -m nicolas.delsaux@gmx.fr
+  when: certificate_exists.stat.exists == False
+
+- name: Automate certificate renewall
+  cron:
+    name: Renew certificate
+    hour: "0"
+    minute: "10"
+    weekday: "1"
+    job: "certbot-auto renew"
+

@@ -1,0 +1,89 @@
+---
+- name: Install required packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - composer
+    - yarn
+
+- name: Check if we should download Shaarli
+  stat: 
+    path: /var/www/html/Shaarli/
+  register: shaarli_exists
+
+- name: download Shaarli
+  unarchive:
+    src: https://github.com/shaarli/Shaarli/releases/download/v0.10.2/shaarli-v0.10.2-full.zip
+    remote_src: yes
+    dest: /var/www/html/
+    group: www-data
+    owner: www-data
+    mode: 0777
+  when: shaarli_exists.stat.exists == False
+
+- name: Make Shaarli usable by www-data
+  file:
+    path: /var/www/html/Shaarli
+    group: www-data
+    owner: www-data
+    mode: 0777
+    recurse: yes
+
+- name: Check if composer should run
+  stat: 
+    path: /var/www/html/Shaarli/composer.lock
+  register: composer_exists
+
+# it will only work with swap enabled !
+- name: Update composer dependencies
+  command:
+  args:
+    chdir: /var/www/html/Shaarli
+    argv:
+      - composer
+      - install
+      - --no-dev
+      - --prefer-dist
+  when: composer_exists.stat.exists == False
+
+- name: Build front-end
+  command:
+  args:
+    chdir: /var/www/html/Shaarli
+    argv:
+      - make
+      - build_frontend
+  when: composer_exists.stat.exists == False
+
+- name: Check if config is present
+  stat: 
+    path: /var/www/html/Shaarli/data/config.json.php
+  register: config_exists
+
+#- name: Copy data from QNAP
+#  command:
+#  args:
+#    chdir: /var/www/html/Shaarli
+#    argv:
+#      - rsync
+#      - -r 
+#      - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/Shaarli/data/*
+#      - /var/www/html/Shaarli/data
+#  when: config_exists.stat.exists == False
+#
+- name: Prepare config backup
+  file:
+    path: /home/pi/to_backup/Shaarli/
+    owner: pi
+    group: pi
+    recurse: true
+    state: directory
+
+- name: Immediatly mark config for backup
+  file:
+    src: /var/www/html/Shaarli/data
+    dest: /home/pi/to_backup/Shaarli/data
+    owner: pi
+    group: pi
+    state: link

@@ -1,0 +1,13 @@
+- name: Stop swapfile
+  command: dphys-swapfile swapoff
+
+- name: Uninstall swapfile
+  command: dphys-swapfile uninstall
+
+- name: Make it persistent
+  command: update-rc.d dphys-swapfile remove
+  
+- name: uninstall package 
+  apt:
+    name: dphys-swapfile
+    state: absent

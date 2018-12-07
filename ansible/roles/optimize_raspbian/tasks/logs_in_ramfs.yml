@@ -1,0 +1,7 @@
+- name: Edit fstab
+  mount:
+    path: /var/log
+    src: none
+    fstype: tmpfs
+    opts: size=1M,noatime
+    state: present

@@ -1,0 +1,41 @@
+---
+- name: Install required packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - mldonkey-server
+    - telnet
+
+- name: Start mldonkey service
+  service:
+    name: mldonkey-server
+    state: started
+
+- name: Check if we should mount incoming folder in home
+  stat: 
+    path: /home/pi/incoming
+  register: incoming_exists
+
+
+- name: Mount incoming folder in home
+  file:
+    src: /var/lib/mldonkey/incoming
+    dest: /home/pi/incoming
+    owner: pi
+    group: pi
+    state: link
+  become: yes
+  become_user: pi
+  when: incoming_exists.stat.exists == False
+
+
+- name: Create crontab entry to backup downloaded files
+  cron:
+    name: Backup mldonkey downloads
+    hour: "0"
+    minute: "0"
+    weekday: "5"
+    job: "rsync -az --copy-dirlinks --log-file=/home/pi/log/rsync_mldonkey.log /home/pi/incoming admin@192.168.0.2:/share/Download/mldonkey"
+  become: yes
+  become_user: pi

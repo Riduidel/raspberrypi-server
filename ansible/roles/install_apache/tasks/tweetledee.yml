@@ -1,0 +1,68 @@
+---
+- name: Install required packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - libcurl4-openssl-dev
+
+- name: Check if we should download Tweetledee
+  stat: 
+    path: /var/www/tweetledee
+  register: tweetledee_exists
+
+- name: download tweetledee
+  git:
+    repo: https://github.com/tweetledee/tweetledee.git
+    dest: /var/www/tweetledee
+  when: tweetledee_exists.stat.exists == False
+
+- name: Make tweetledee usable by www-data
+  file:
+    path: /var/www/tweetledee
+    group: www-data
+    owner: www-data
+    mode: 0777
+    recurse: yes
+
+
+- name: Check if config is present
+  stat: 
+    path: /var/www/tweetledee/tweetledee/tldlib/keys/tweetledee_keys.php
+  register: config_exists
+
+- name: Copy data from QNAP
+  command:
+  args:
+    chdir: /var/www/html/Shaarli
+    argv:
+      - rsync
+      - -r 
+      - admin@192.168.0.2:/share/Download/raspberry-server/tweetledee/tldlib/keys/*
+      - /var/www/tweetledee/tweetledee/tldlib/keys
+  when: config_exists.stat.exists == False
+
+- name: Prepare config backup
+  file:
+    path: /home/pi/to_backup/tweetledee/tldlib/keys
+    owner: pi
+    group: pi
+    recurse: true
+    state: directory
+
+- name: Immediatly mark config for backup
+  file:
+    src: /var/www/tweetledee/tweetledee/tldlib/keys/tweetledee_keys.php
+    dest: /home/pi/to_backup/tweetledee/tldlib/keys/tweetledee_keys.php
+    owner: pi
+    group: pi
+    state: link
+
+
+- name: Expose tweetledee over the web
+  file:
+    src: /var/www/tweetledee/tweetledee
+    dest: /var/www/html/tweetledee
+    owner: pi
+    group: pi
+    state: link

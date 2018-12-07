@@ -1,0 +1,6 @@
+---
+- name: Set authorized key taken from file
+  authorized_key:
+    user: pi
+    state: present
+    key: "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAk2TtCoMEWWO67/98GGhNmN5DAO/yTRMaKeUsYioYc++JuzEXzNFR1HfLHpow1HTcxYwUGJqwEdjHTsb4H+Fr/1xo2t8TZ/Z9Cfu/1SExsnssALnUMOe/VW8LEpPub2arIVkFgE6nNa0Ra+eZtLtjc00uh5LYP4hrpvg4lHsUOGAE01OW5T5iG3ms2I/KvdOOAq78xZxD8q5Gnhalj8zZYmrjmiBEjXdqn/VwL/seWb2Tc5w89mePbbJnEKYPWQG9LUU8kwVJul1MYpVOlDMg/btL/ooVCA6RqIVt9Vc+GggNKrgIEigN/MF0vsPXM3qM7mwI0Al8irFW7ClwWyEmDw== 58:f2:65:cf:8d:29:3a:8b:89:b2:e0:c7:67:dc:f8:f8"

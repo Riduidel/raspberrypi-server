@@ -1,0 +1,11 @@
+- hosts: pi
+  become: true
+
+  roles:
+    - raspbian_bootstrap
+    - install_public_key
+    - install_small_backup
+    - install_rss2imap
+    - install_mldonkey
+    - install_apache
+    - optimize_raspbian

@@ -1,0 +1,116 @@
+---
+- name: Install required packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - git
+    - rsync
+    - python
+
+- name: Check if rss2imap exists
+  stat: 
+    path: /home/pi/rss2imap/
+  register: rss2imap_exists
+
+- name: Clone rss2imap
+  git:
+    repo: https://github.com/rcarmo/rss2imap.git
+    dest: /home/pi/rss2imap
+  when: rss2imap_exists.stat.exists == False
+  become: yes
+  become_user: pi
+
+- name: Check if config is present
+  stat: 
+    path: /home/pi/rss2imap/config.py
+  register: config_exists
+
+- name: Download config from QNAP if non existing
+  command:
+  args:
+    chdir: /home/pi/rss2imap
+    argv:
+      - rsync
+      - -r 
+      - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/rss2imap/*
+      - /home/pi/rss2imap
+  when: config_exists.stat.exists == False
+  become: yes
+  become_user: pi
+
+- name: Immediatly mark config for backup
+  file:
+    src: /home/pi/rss2imap/{{item}}
+    dest: /home/pi/to_backup/rss2imap/{{item}}
+    owner: pi
+    group: pi
+    state: link
+  with_items:
+    - config.py
+    - r2e.opml
+
+- name: Check if feeds.dat is present
+  stat: 
+    path: /home/pi/.rss2email/feeds.dat
+  register: feeds_exists
+
+- name: Init r2e if needed
+  command:
+  args:
+    chdir: /home/pi/rss2imap
+    argv:
+      - ./r2e
+      - new
+  when: feeds_exists.stat.exists == False
+  become: yes
+  become_user: pi
+
+- name: Immediatly mark feeds.dat for backup
+  file:
+    src: /home/pi/.rss2email/feeds.dat
+    dest: /home/pi/to_backup/rss2imap/feeds.dat
+    owner: pi
+    group: pi
+    state: link
+
+- name: List loaded streams
+  command:
+  args:
+    chdir: /home/pi/rss2imap
+    argv:
+      - ./r2e
+      - list
+  register: r2e_list
+  become: yes
+  become_user: pi
+
+- name: Import all OPML content
+  command:
+  args:
+    chdir: /home/pi/rss2imap
+    argv:
+      - ./r2e
+      - opmlimport
+      - r2e.opml
+  when: r2e_list.stdout==""
+  become: yes
+  become_user: pi
+
+- name: Create crontab entry to have feed entries
+  cron:
+    name: Read feeds
+    hour: "*/2"
+    minute: "0"
+    job: "cd /home/pi/rss2imap && ./r2e run > /home/pi/rss2imap/r2e.log 2>&1"
+  become: yes
+  become_user: pi
+
+- name: Create crontab entry to backup feeds
+  cron:
+    name: Backup feeds
+    hour: "0"
+    minute: "0"
+    job: "cd /home/pi/rss2imap/ && ./r2e opmlexport > r2e.opml"
+  become: yes
+  become_user: pi

@@ -1,0 +1,20 @@
+- name: Make sure backup folder exists
+  file:
+    path: /home/pi/{{item}}
+    group: pi
+    owner: pi
+    recurse: yes
+    state: directory
+  with_items:
+    - to_backup/rss2imap
+    - log
+
+- name: Create crontab entry to backup various configs
+  cron:
+    name: Backup config
+    hour: "0"
+    minute: "10"
+    job: "rsync -az --copy-links --copy-dirlinks --log-file=~/log/rsync_backup.log ~/to_backup admin@192.168.0.2:/share/Download/raspberry-server"
+  become: yes
+  become_user: pi
+

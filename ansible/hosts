@@ -1,0 +1,2 @@
+[pi]
+raspberrypi-server ansible_host=nicolas-delsaux.hd.free.fr ansible_user=pi
