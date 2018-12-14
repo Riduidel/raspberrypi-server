@@ -30,12 +30,21 @@
   when: incoming_exists.stat.exists == False
 
 
-- name: Create crontab entry to backup downloaded files
+- name: Create crontab entry to make sure incoming files can be easily deleted after copy
   cron:
-    name: Backup mldonkey downloads
+    name: Make downloaded files freely writable
     hour: "0"
     minute: "0"
     weekday: "5"
-    job: "rsync -az --copy-dirlinks --log-file=/home/pi/log/rsync_mldonkey.log /home/pi/incoming admin@192.168.0.2:/share/Download/mldonkey"
+    job: "chmod -R ugoa+w /home/pi/incoming/"
+  become: yes
+
+- name: Create crontab entry to backup downloaded files
+  cron:
+    name: Backup mldonkey downloads
+    hour: "1"
+    minute: "0"
+    weekday: "5"
+    job: "rsync  --remove-source-files -az --copy-dirlinks --log-file=/home/pi/log/rsync_mldonkey.log /home/pi/incoming admin@192.168.0.2:/share/Download/mldonkey"
   become: yes
   become_user: pi
