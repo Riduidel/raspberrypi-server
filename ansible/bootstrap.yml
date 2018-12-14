@@ -8,4 +8,5 @@
     - install_rss2imap
     - install_mldonkey
     - install_apache
+    - install_software
     - optimize_raspbian
