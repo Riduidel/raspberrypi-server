@@ -15,8 +15,9 @@
 
 - name: Clone rss2imap
   git:
-    repo: https://github.com/rcarmo/rss2imap.git
+    repo: https://github.com/Riduidel/rss2imap.git
     dest: /home/pi/rss2imap
+    version: deployed
   when: rss2imap_exists.stat.exists == False
   become: yes
   become_user: pi
@@ -49,30 +50,7 @@
   with_items:
     - config.py
     - r2e.opml
-
-- name: Check if feeds.dat is present
-  stat: 
-    path: /home/pi/.rss2email/feeds.dat
-  register: feeds_exists
-
-- name: Init r2e if needed
-  command:
-  args:
-    chdir: /home/pi/rss2imap
-    argv:
-      - ./r2e
-      - new
-  when: feeds_exists.stat.exists == False
-  become: yes
-  become_user: pi
-
-- name: Immediatly mark feeds.dat for backup
-  file:
-    src: /home/pi/.rss2email/feeds.dat
-    dest: /home/pi/to_backup/rss2imap/feeds.dat
-    owner: pi
-    group: pi
-    state: link
+    - feeds.dat
 
 - name: List loaded streams
   command:
