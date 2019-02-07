@@ -35,6 +35,14 @@
     mode: u=rwx,g=rwx,o=rwx
     recurse: yes
 
+- name: Make sure /var/log/apache2 is always present (because it is removed due to tmpfs)
+  cron:
+    name: Recreate apache log folder
+    special_time: reboot
+    job: "mkdir /var/log/apache2 && chown www-data:www-data /var/log/apache2"
+  become: yes
+
+
 - name: Create simple php template file
   template:
     src: index.php.j2
