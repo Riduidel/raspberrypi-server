@@ -1,15 +1,17 @@
-- name: Check if certbot-auto already exists
-  stat:
-    path: /usr/local/sbin/certbot-auto
-  register: certbot_exists
+- name: Install debian-stretch-backports
+  apt_repository:
+    repo: deb http://deb.debian.org/debian stretch-backports main
+    state: present
 
-- name: Download certbot-auto
-  get_url:
-    url: https://dl.eff.org/certbot-auto
-    dest: /usr/local/sbin
-    mode: u+x
-  when: certbot_exists.stat.exists == False
+- name: Now install certbot-auto
+  apt:
+    name: certbot
+    default_release: stretch-backports
 
+- name: And the dedicated Apache plugin
+  apt:
+    name: python-certbot-apache
+  
 - name: Check if certificate already exists
   stat:
     path: /etc/letsencrypt/live/nicolas-delsaux.hd.free.fr/fullchain.pem
@@ -33,5 +35,7 @@
     hour: "0"
     minute: "10"
     weekday: "1"
-    job: "certbot-auto renew"
+    job: "certbot renew"
+  become: yes
+
 
