@@ -1,4 +1,13 @@
 ---
+- name: Install required packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - composer
+    - yarn
+    - git
+
 - name: Install Apache/PHP
   include_tasks: php.yml
 

@@ -1,12 +1,4 @@
 ---
-- name: Install required packages
-  apt:
-    name: "{{ packages }}"
-  vars:
-    packages:
-    - composer
-    - yarn
-
 - name: Check if we should download Shaarli
   stat: 
     path: /var/www/html/Shaarli/

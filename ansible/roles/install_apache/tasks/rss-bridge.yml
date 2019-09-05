@@ -6,8 +6,9 @@
 
 - name: download rss-bridge
   git:
-    repo: https://github.com/RSS-Bridge/rss-bridge.git
+    repo: https://github.com/Riduidel/rss-bridge.git
     dest: /var/www/html/rss-bridge
+    version: live
   when: rss_bridge_exists.stat.exists == False
 
 - name: Make rss-bridge usable by www-data
@@ -26,7 +27,7 @@
 - name: Copy data from QNAP
   command:
   args:
-    chdir: /var/www/html/Shaarli
+    chdir: /var/www/html/rss-bridge
     argv:
       - rsync
       - -r 
