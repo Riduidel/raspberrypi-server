@@ -1,0 +1,24 @@
+- name: Disable network kernel modules for wireless
+  copy:
+    dest: /etc/modprobe.d/raspi-wireless-blacklist.conf
+    content: |
+      # WiFi
+      blacklist brcmfmac
+      blacklist brcmutil
+
+      # Bluetooth
+      blacklist btbcm
+      blacklist hci_uart
+  become: yes
+
+- name: Disable some services
+  systemd:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+    scope: system
+  become: yes
+  loop:
+    - bluetooth
+    - avahi-daemon
+    - triggerhappy
