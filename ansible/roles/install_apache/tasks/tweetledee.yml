@@ -13,8 +13,9 @@
 
 - name: download tweetledee
   git:
-    repo: https://github.com/tweetledee/tweetledee.git
+    repo: https://github.com/Riduidel/tweetledee.git
     dest: /var/www/tweetledee
+    version: live
   when: tweetledee_exists.stat.exists == False
 
 - name: Make tweetledee usable by www-data
@@ -34,7 +35,7 @@
 - name: Copy data from QNAP
   command:
   args:
-    chdir: /var/www/html/Shaarli
+    chdir: /var/www/tweetledee
     argv:
       - rsync
       - -r 
