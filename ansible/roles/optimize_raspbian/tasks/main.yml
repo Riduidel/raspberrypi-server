@@ -1,6 +1,15 @@
 ---
-#- name: Process APT
-#  include_tasks: apt.yml
+- name: Make sure ntpd is refreshed regularly
+  cron:
+    name: Force refresh of ntp time
+    hour: "1"
+    minute: "0"
+    weekday: "1"
+    job: "/etc/init.d/ntp stop && ntpd -q -g && /etc/init.d/ntp start"
+  become: yes
+
+- name: Process APT
+  include_tasks: apt.yml
 
 - name: check if package is installed
   package:
