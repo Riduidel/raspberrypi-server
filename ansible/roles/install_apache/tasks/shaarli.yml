@@ -53,17 +53,17 @@
     path: /var/www/html/Shaarli/data/config.json.php
   register: config_exists
 
-#- name: Copy data from QNAP
-#  command:
-#  args:
-#    chdir: /var/www/html/Shaarli
-#    argv:
-#      - rsync
-#      - -r 
-#      - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/Shaarli/data/*
-#      - /var/www/html/Shaarli/data
-#  when: config_exists.stat.exists == False
-#
+- name: Copy data from QNAP
+  command:
+  args:
+    chdir: /var/www/html/Shaarli
+    argv:
+      - rsync
+      - -r 
+      - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/Shaarli/data/*
+      - /var/www/html/Shaarli/data
+  when: config_exists.stat.exists == False
+
 - name: Prepare config backup
   file:
     path: /home/pi/to_backup/Shaarli/

@@ -8,21 +8,22 @@
     job: "/etc/init.d/ntp stop && ntpd -q -g && /etc/init.d/ntp start"
   become: yes
 
-- name: Process APT
-  include_tasks: apt.yml
 - name: Disable useless services
   include_tasks: disable_services.yml
 
-- name: check if package is installed
-  package:
-    name: dphys-swapfile
-    state: present
-  check_mode: true
-  register: dphys_swapfile_check
-# See https://stackoverflow.com/a/46630866/15619
-- name: Uninstall dphys_swapfile and swap
-  include_tasks: uninstall_swap.yml
-  when: not dphys_swapfile_check.changed==true
-
-- name: Put logs in ramfs
-  include_tasks: logs_in_ramfs.yml
+#- name: Process APT
+#  include_tasks: apt.yml
+#
+#- name: check if package is installed
+#  package:
+#    name: dphys-swapfile
+#    state: present
+#  check_mode: true
+#  register: dphys_swapfile_check
+## See https://stackoverflow.com/a/46630866/15619
+#- name: Uninstall dphys_swapfile and swap
+#  include_tasks: uninstall_swap.yml
+#  when: not dphys_swapfile_check.changed==true
+#
+#- name: Put logs in ramfs
+#  include_tasks: logs_in_ramfs.yml

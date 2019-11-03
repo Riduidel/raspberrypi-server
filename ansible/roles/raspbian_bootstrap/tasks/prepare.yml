@@ -1,4 +1,0 @@
----
-
-- name: FILE | Creates ansible facts.d
-  file: path=/etc/ansible/facts.d state=directory

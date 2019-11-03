@@ -1,12 +1,6 @@
-- name: Install debian-stretch-backports
-  apt_repository:
-    repo: deb http://deb.debian.org/debian stretch-backports main
-    state: present
-
 - name: Now install certbot-auto
   apt:
     name: certbot
-    default_release: stretch-backports
 
 - name: And the dedicated Apache plugin
   apt:
@@ -21,7 +15,7 @@
   command:
   args:
     argv:
-      - certbot-auto
+      - certbot
       - -d nicolas-delsaux.hd.free.fr
       - --apache
       - -n

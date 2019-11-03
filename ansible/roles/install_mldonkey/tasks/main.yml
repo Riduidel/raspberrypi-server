@@ -7,10 +7,33 @@
     - mldonkey-server
     - telnet
 
+- name: Allow mldonkey to run at startup
+  replace:
+    path: /etc/default/mldonkey
+    regexp: 'LAUNCH_AT_STARTUP.*'
+    after: "LAUNCH_AT_STARTUP\\="
+    replace: "true"
+  become: yes
+
+# TODO make that working !!!
+#- name: Allow access to admin UI from local network
+#  lineinfile:
+#    path: /var/lib/mldonkey/downloads.ini
+#    insertafter: " allowed_ips = [ "
+#    line: "        \"192.168.0.0/16\""
+#  become: yes
+
 - name: Start mldonkey service
   service:
     name: mldonkey-server
     state: started
+
+- name: Make sure incoming folder is accessible by pi user
+  file:
+    path: /var/lib/mldonkey/incoming
+    mode: 777
+    recurse: yes
+  become: yes
 
 - name: Check if we should mount incoming folder in home
   stat: 

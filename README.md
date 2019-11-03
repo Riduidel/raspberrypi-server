@@ -7,8 +7,8 @@ Mon script Ansible pour initialiser mon Raspberry avec tout ce qui va bien dedan
 Le raspberry doit avoir
 
 * Une version de Raspbian moderne
-* Une clé SSH installée
 * Le mot de passe pi changé
+* La connexion SSH au QNAP doit se faire sans mot de passe
 
 ## Lancer avec Windows
 

@@ -2,11 +2,11 @@
   become: true
 
   roles:
-    - raspbian_bootstrap
-    - install_public_key
-    - install_small_backup
-    - install_rss2imap
+#    - install_public_key
+#    - install_small_backup
+#    - install_rss2imap
     - install_mldonkey
-    - install_apache
-    - install_software
-    - optimize_raspbian
+#    - install_apache
+#    - install_beehive
+#    - install_software
+#    - optimize_raspbian

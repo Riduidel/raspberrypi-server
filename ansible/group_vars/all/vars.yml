@@ -26,6 +26,6 @@ dbs_groups: []
 dbs_users: False
 
 dbs_apt_default_host: "raspbian.raspberrypi.org"
-dbs_apt_components: "stretch main contrib non-free rpi"
+dbs_apt_components: "buster main contrib non-free rpi"
 
 script_install_path: "/home/pi"

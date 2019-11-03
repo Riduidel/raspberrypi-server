@@ -39,7 +39,7 @@
     argv:
       - rsync
       - -r 
-      - admin@192.168.0.2:/share/Download/raspberry-server/tweetledee/tldlib/keys/*
+      - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/tweetledee/tldlib/keys/*
       - /var/www/tweetledee/tweetledee/tldlib/keys
   when: config_exists.stat.exists == False
 
