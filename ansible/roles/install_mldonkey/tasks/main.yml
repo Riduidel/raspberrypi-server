@@ -9,7 +9,7 @@
 
 - name: Allow mldonkey to run at startup
   replace:
-    path: /etc/default/mldonkey
+    path: /etc/default/mldonkey-server
     regexp: 'LAUNCH_AT_STARTUP.*'
     after: "LAUNCH_AT_STARTUP\\="
     replace: "true"

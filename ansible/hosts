@@ -1,2 +1,2 @@
 [pi]
-raspberrypi-server ansible_host=nicolas-delsaux.hd.free.fr ansible_user=pi
+raspberrypi-server ansible_host=nicolas-delsaux.hd.free.fr ansible_user=pi ansible_python_interpreter=/usr/bin/python3

@@ -4,7 +4,7 @@
 
 - name: And the dedicated Apache plugin
   apt:
-    name: python-certbot-apache
+    name: python3-certbot-apache
   
 - name: Check if certificate already exists
   stat:

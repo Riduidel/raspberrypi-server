@@ -1,0 +1,119 @@
+---
+#- name: Install required packages
+#  apt:
+#    name: "{{ packages }}"
+#  vars:
+#    packages:
+#    - rsync
+
+- name: Check if rrss2imap folder exists
+  stat: 
+    path: /home/pi/rrss2imap/
+  register: rss2imap_exists
+
+- name: Creates rrss2imap directory
+  file:
+    path: /home/pi/rrss2imap/
+    state: directory
+  become: yes
+  become_user: pi
+  when: rss2imap_exists.stat.exists == False
+
+- name: Check if rrss2imap executable exists
+  stat: 
+    path: /home/pi/rrss2imap/rrss2imap_raspbian
+  register: rss2imap_exec
+
+- name: check latest rrss2imap release
+  uri:
+    url: https://api.github.com/repos/Riduidel/rrss2imap/releases/latest
+    return_content: true
+  when: rss2imap_exec.stat.exists == False
+  register: rrss2imap_latest
+
+- name: "Download rrss2imap {{ rrss2imap_latest.json.tag_name }}"
+  get_url:
+    url: "https://github.com/Riduidel/rrss2imap/releases/download/{{ rrss2imap_latest.json.tag_name }}/rrss2imap_raspbian"
+    dest: /home/pi/rrss2imap/
+    mode: a+x
+    owner: pi
+  when: rss2imap_exec.stat.exists == False
+
+- name: Check if config is present
+  stat: 
+    path: /home/pi/rrss2imap/config.json
+  register: config_exists
+
+- name: Download config from QNAP if non existing
+  command:
+  args:
+    chdir: /home/pi/rrss2imap
+    argv:
+      - rsync
+      - -r 
+      - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/rrss2imap/*
+      - /home/pi/rrss2imap
+  when: config_exists.stat.exists == False
+  become: yes
+  become_user: pi
+
+- name: Prepare config backup
+  file:
+    path: /home/pi/to_backup/rrss2imap
+    owner: pi
+    group: pi
+    recurse: true
+    state: directory
+
+
+- name: Immediatly mark config for backup
+  file:
+    src: /home/pi/rrss2imap/{{item}}
+    dest: /home/pi/to_backup/rrss2imap/{{item}}
+    owner: pi
+    group: pi
+    state: link
+  with_items:
+    - config.json
+    - r2e.opml
+
+- name: List loaded streams
+  command:
+  args:
+    chdir: /home/pi/rrss2imap
+    argv:
+      - ./rrss2imap_raspbian
+      - list
+  register: rrss2imap_list
+  become: yes
+  become_user: pi
+
+- name: Import all OPML content (because config.json doesn't seems to contain anything)
+  command:
+  args:
+    chdir: /home/pi/rrss2imap
+    argv:
+      - ./rrss2imap_raspbian
+      - opmlimport
+      - r2e.opml
+  when: rrss2imap_list.stdout==""
+  become: yes
+  become_user: pi
+
+- name: Create crontab entry to have feed entries
+  cron:
+    name: Read feeds
+    hour: "*/2"
+    minute: "0"
+    job: "cd /home/pi/rrss2imap && ./rrss2imap_raspbian run > /home/pi/rrss2imap/r2e.log 2>&1"
+  become: yes
+  become_user: pi
+
+- name: Create crontab entry to backup feeds
+  cron:
+    name: Backup feeds
+    hour: "0"
+    minute: "0"
+    job: "cd /home/pi/rrss2imap/ && ./rrss2imap_raspbian opmlexport > r2e.opml"
+  become: yes
+  become_user: pi

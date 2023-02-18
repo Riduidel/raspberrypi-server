@@ -53,3 +53,6 @@
 
 - name: Install Tweetledee
   include_tasks: tweetledee.yml
+
+- name: Install mastodon-rss
+  include_tasks: mastodon-rss.yml

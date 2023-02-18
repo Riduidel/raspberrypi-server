@@ -14,14 +14,6 @@
     mode: 0777
   when: shaarli_exists.stat.exists == False
 
-- name: Make Shaarli usable by www-data
-  file:
-    path: /var/www/html/Shaarli
-    group: www-data
-    owner: www-data
-    mode: 0777
-    recurse: yes
-
 - name: Check if composer should run
   stat: 
     path: /var/www/html/Shaarli/composer.lock
@@ -62,7 +54,17 @@
       - -r 
       - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/Shaarli/data/*
       - /var/www/html/Shaarli/data
+  become: yes
+  become_user: pi
   when: config_exists.stat.exists == False
+
+- name: Make Shaarli usable by www-data
+  file:
+    path: /var/www/html/Shaarli
+    group: www-data
+    owner: www-data
+    mode: 0777
+    recurse: yes
 
 - name: Prepare config backup
   file:

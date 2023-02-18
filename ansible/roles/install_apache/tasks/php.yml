@@ -1,4 +1,4 @@
-# mainly borrowed from https://ayesh.me/Ubuntu-PHP-7.2
+# Time to use https://www.tal.org/tutorials/setup-php-7-or-8-apache-raspberry-pi
 - name: Install required packages
   apt:
     name: "{{ packages }}"

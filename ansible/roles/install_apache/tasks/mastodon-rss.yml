@@ -1,0 +1,90 @@
+---
+- name: Install required packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - composer
+
+- name: Check if we should download mastodon-rss
+  stat: 
+    path: /var/www/html/mastodon-rss
+  register: mastodon_rss_exists
+
+- name: Download mastodon-rss
+  git:
+    repo: https://github.com/Riduidel/mastodon-rss.git
+    dest: /var/www/html/mastodon-rss
+    version: main
+  become: yes
+  become_user: pi
+  when: mastodon_rss_exists.stat.exists == False
+
+# Mind you, copying repo is not enough
+# We have to run composer, then apply a set of PR I made to the upstream project
+- name: Run composer install
+  become: yes
+  become_user: pi
+  composer:
+    command: install
+    working_dir: /var/www/html/mastodon-rss
+
+# Then replace the mastodon-rest composer package with the github repository (to later apply the PRs)
+- name: Remove mastodon-rest
+  file:
+    path: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
+    state: absent
+  become: yes
+  become_user: pi
+  when: mastodon_rss_exists.stat.exists == False
+
+- name: Replace mastodon-rest with my own fork
+  git:
+    repo: https://github.com/Riduidel/mastodon-rest.git
+    dest: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
+    version: live
+  become: yes
+  become_user: pi
+  when: mastodon_rss_exists.stat.exists == False
+
+- name: Check if config is present
+  stat: 
+    path: /var/www/html/mastodon-rss/config.php
+  register: config_exists
+
+- name: Copy data from QNAP
+  command:
+  args:
+    chdir: /var/www/html/mastodon-rss
+    argv:
+      - rsync
+      - -r 
+      - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/mastodon-rss/*
+      - /var/www/html/mastodon-rss
+  become: yes
+  become_user: pi
+  when: config_exists.stat.exists == False
+
+- name: Make mastodon-rss usable by www-data
+  file:
+    path: /var/www/html/mastodon-rss
+    group: www-data
+    owner: www-data
+    mode: 0777
+    recurse: yes
+
+- name: Prepare config backup
+  file:
+    path: /home/pi/to_backup/mastodon-rss
+    owner: pi
+    group: pi
+    recurse: true
+    state: directory
+
+- name: Immediatly mark config for backup
+  file:
+    src: /var/www/html/mastodon-rss/config.php
+    dest: /home/pi/to_backup/mastodon-rss/config.php
+    owner: pi
+    group: pi
+    state: link

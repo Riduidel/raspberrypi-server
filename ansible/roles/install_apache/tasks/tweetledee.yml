@@ -18,15 +18,6 @@
     version: live
   when: tweetledee_exists.stat.exists == False
 
-- name: Make tweetledee usable by www-data
-  file:
-    path: /var/www/tweetledee
-    group: www-data
-    owner: www-data
-    mode: 0777
-    recurse: yes
-
-
 - name: Check if config is present
   stat: 
     path: /var/www/tweetledee/tweetledee/tldlib/keys/tweetledee_keys.php
@@ -41,7 +32,17 @@
       - -r 
       - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/tweetledee/tldlib/keys/*
       - /var/www/tweetledee/tweetledee/tldlib/keys
+  become: yes
+  become_user: pi
   when: config_exists.stat.exists == False
+
+- name: Make tweetledee usable by www-data
+  file:
+    path: /var/www/tweetledee
+    group: www-data
+    owner: www-data
+    mode: 0777
+    recurse: yes
 
 - name: Prepare config backup
   file:

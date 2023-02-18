@@ -12,13 +12,20 @@ Le raspberry doit avoir
 
 ## Lancer avec Windows
 
+**Ne pas oublier de créer une clé SSH sur le Raspberry et de se connecter au QNAP avec les commandes suivantes**
+
+
+
 Il faut d'abord installer Docker.
 Dans le dossier `raspberrypi-server`, lancer la commande
 
-    docker run -t -i -v %CD%/ansible:/ansible williamyeh/ansible:debian8 /bin/bash
+
+    set QNAP_PASSWORD=TODO
+    set RASBIAN_PASSWORD=TODO
+    docker run --rm --name ansible -t -i -e QNAP_PASSWORD="%QNAP_PASSWORD%" -e RASPBIAN_PASSWORD="%RASPBIAN_PASSWORD%" -v %CD%/ansible:/ansible willhallonline/ansible:2.13-ubuntu-22.04 /bin/bash
     mkdir /root/.ssh && ssh-keyscan -t rsa nicolas-delsaux.hd.free.fr > /root/.ssh/known_hosts
     cd /ansible
-    ansible-playbook -i hosts bootstrap.yml --ask-pass
+    ansible-playbook -i hosts bootstrap.yml --extra-vars=ansible_password=$RASPBIAN_PASSWORD
 
 ## Qu'est-ce qui manque ?
 
