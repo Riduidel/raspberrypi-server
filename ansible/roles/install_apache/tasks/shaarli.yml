@@ -81,3 +81,12 @@
     owner: pi
     group: pi
     state: link
+
+- name: Download mastodon plugin
+  unarchive:
+    src: https://github.com/kalvn/shaarli2mastodon/archive/refs/tags/v3.0.0.zip
+    remote_src: yes
+    dest: /var/www/html/Shaarli/plugins
+    group: www-data
+    owner: www-data
+    mode: 0777
