@@ -94,7 +94,7 @@
     chdir: /home/pi/rrss2imap
     argv:
       - ./rrss2imap_raspbian
-      - opmlimport
+      - import
       - r2e.opml
   when: rrss2imap_list.stdout==""
   become: yes
@@ -114,6 +114,6 @@
     name: Backup feeds
     hour: "0"
     minute: "0"
-    job: "cd /home/pi/rrss2imap/ && ./rrss2imap_raspbian opmlexport > r2e.opml"
+    job: "cd /home/pi/rrss2imap/ && ./rrss2imap_raspbian export r2e.opml"
   become: yes
   become_user: pi
