@@ -1,6 +1,15 @@
 ---
-- name: Set authorized key taken from file
+- name: Copy public key for connection from Keepass
   authorized_key:
     user: pi
     state: present
-    key: "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAk2TtCoMEWWO67/98GGhNmN5DAO/yTRMaKeUsYioYc++JuzEXzNFR1HfLHpow1HTcxYwUGJqwEdjHTsb4H+Fr/1xo2t8TZ/Z9Cfu/1SExsnssALnUMOe/VW8LEpPub2arIVkFgE6nNa0Ra+eZtLtjc00uh5LYP4hrpvg4lHsUOGAE01OW5T5iG3ms2I/KvdOOAq78xZxD8q5Gnhalj8zZYmrjmiBEjXdqn/VwL/seWb2Tc5w89mePbbJnEKYPWQG9LUU8kwVJul1MYpVOlDMg/btL/ooVCA6RqIVt9Vc+GggNKrgIEigN/MF0vsPXM3qM7mwI0Al8irFW7ClwWyEmDw== 58:f2:65:cf:8d:29:3a:8b:89:b2:e0:c7:67:dc:f8:f8"
+    key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVOyoVWn81viJJp0KhODXy2LDM6dX4QhRpMb2y/kRyplDjoXRKOKV/e+WXLRyljFyuD+Kb2u6fZ/2yRD/63ujXHm87zMqJ/6TDgBvKjbI4SmLwyqm9sCpK5EuUPhYkyiCYpPWpJ9jawBsC4+mRHqgxkD3+5POwN5G6XXiU+OlGuOFlqzUbrZCO2NpcI066sQHK1SYue6UQl8fA6wjouEM7VXO5C7UCo9tMkHGK/nrHQrk0e6zgBHXKLJ5sfDdcG3hHEHr7HUfG2Ffx3/TKNaV+sTknQ/W4KCusJuZgddmwA/KrBZm3i31BfGYVRo97LOQK+z+mXPz88FTJYOKgfySfdjqnSgs0efCsGcB1EQ3C+u/8i380lBLZDDZy8aDenvpqrp0+EklEZ1u4XzpWseRzsQFhSSUO4f8x3gwiQv4iDEfbT6s+ovBM+/0ElmArP/pZT6wNCuMHGDHcTCmpGUfs/ygojlUD3mFlxNbUsjmFYFbykLhWZdVMrfMmu/zQSkk= Clé pour le Raspberry PI depuis Keepass"
+
+- name: Generate one key for connectiong Raspberry to QNAP
+  openssh_keypair:
+    comment: Clé pour connecter le Raspberry au NAS
+    owner: pi
+    # Remember that setting an other file name will only lead to despseration
+    path: /home/pi/.ssh/id_ssh_rsa
+
+# - name: Add the generated key to the QNAP server

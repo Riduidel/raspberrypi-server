@@ -1,4 +1,13 @@
 ---
+- name: Install required packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - composer
+    - yarn
+    - git
+
 - name: Check if we should download rss-bridge
   stat: 
     path: /var/www/html/rss-bridge
@@ -21,6 +30,8 @@
   args:
     chdir: /var/www/html/rss-bridge
     argv:
+      - sshpass
+      - p '{{qnap_password}}'
       - rsync
       - -r 
       - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/rss-bridge/*

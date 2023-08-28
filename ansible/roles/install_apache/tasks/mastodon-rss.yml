@@ -20,6 +20,11 @@
   become_user: pi
   when: mastodon_rss_exists.stat.exists == False
 
+- name: Check if we should run mastodon-rss composer
+  stat: 
+    path: /var/www/html/mastodon-rss/vendor
+  register: mastodon_rss_vendor_exists
+
 # Mind you, copying repo is not enough
 # We have to run composer, then apply a set of PR I made to the upstream project
 - name: Run composer install
@@ -28,6 +33,13 @@
   composer:
     command: install
     working_dir: /var/www/html/mastodon-rss
+  when: mastodon_rss_vendor_exists.stat.exists == False
+
+- name: Check if we should replace mastodon-rest with our fork
+  command: 
+    chdir: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
+    cmd: git branch --format='%(refname:short)'
+  register: mastodon_rss_on_master
 
 # Then replace the mastodon-rest composer package with the github repository (to later apply the PRs)
 - name: Remove mastodon-rest
@@ -36,7 +48,7 @@
     state: absent
   become: yes
   become_user: pi
-  when: mastodon_rss_exists.stat.exists == False
+  when: mastodon_rss_on_master.stdout == "master"
 
 - name: Replace mastodon-rest with my own fork
   git:
@@ -45,7 +57,7 @@
     version: live
   become: yes
   become_user: pi
-  when: mastodon_rss_exists.stat.exists == False
+  when: mastodon_rss_on_master.stdout == "master"
 
 - name: Check if config is present
   stat: 
@@ -57,6 +69,8 @@
   args:
     chdir: /var/www/html/mastodon-rss
     argv:
+      - sshpass
+      - p '{{qnap_password}}'
       - rsync
       - -r 
       - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/mastodon-rss/*
