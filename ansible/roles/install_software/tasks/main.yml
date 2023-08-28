@@ -1,21 +1,3 @@
 ---
-- name: Add an apt key by id from a keyserver
-  apt_key:
-    keyserver: keyserver.ubuntu.com
-    id: 8EED8FB4A8E6DA6DFDF0192BC5E6A5ED249AD24C
-
-- name: Install deluge ppa
-  apt_repository:
-    repo: deb http://ppa.launchpad.net/deluge-team/stable/ubuntu/ xenial main
-    state: present
-
-- name: Install required packages
-  apt:
-    name: "{{ packages }}"
-  vars:
-    packages:
-    - ncdu
-    - deluge
-    - deluged
-    - deluge-web
-    - deluge-console
+- name: Install qBitTorrent
+  include_tasks: qbittorrent.yml

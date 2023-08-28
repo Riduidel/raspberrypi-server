@@ -1,0 +1,37 @@
+---
+- name: install qBitTorrent
+  apt:
+    name: qbittorrent-nox
+
+- name: create qBitTorrent group
+  group:
+    name: qbittorrent
+    state: present
+
+- name: create qBitTorrent user
+  user:
+    name: qbittorrent
+    groups: qbittorrent
+    shell: /sbin/nologin
+    append: yes
+    state: present
+    create_home: yes
+
+- name: Adding user pi to qBitTorrent
+  user:
+    name: pi
+    groups: qbittorrent
+    append: true
+
+- name: Copy qBitTorrent systemd service file to server
+  template:
+    src: qbittorrent.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+
+- name: Activate qBitTorrent service
+  systemd:
+    name: qbittorrent
+    state: started
+    enabled: yes
