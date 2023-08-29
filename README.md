@@ -17,12 +17,12 @@ Le raspberry doit avoir
 
 
 Il faut d'abord installer Docker.
-Dans le dossier `raspberrypi-server`, lancer la commande
+Dans le dossier `raspberrypi-server`, lancer la commande **dans PowerShell**
 
+    ansible.ps1
 
-    docker run --rm --name ansible -t -i -e QNAP_PASSWORD="%QNAP_PASSWORD%" -e RASPBIAN_PASSWORD="%RASPBIAN_PASSWORD%" -v %CD%/ansible:/ansible willhallonline/ansible:2.13-ubuntu-22.04 /bin/bash
-    QNAP_PASSWORD=TODO
-    RASBIAN_PASSWORD=TODO
+Entrer le mot de passe maître de Keepass
+
     mkdir /root/.ssh && ssh-keyscan -t rsa nicolas-delsaux.hd.free.fr > /root/.ssh/known_hosts
     cd /ansible
     ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=$RASPBIAN_PASSWORD qnap_password=$QNAP_PASSWORD"
