@@ -45,28 +45,22 @@
     path: /var/www/html/Shaarli/data/config.json.php
   register: config_exists
 
-- name: Copy data from QNAP
-  command:
-  args:
-    chdir: /var/www/html/Shaarli
-    argv:
-      - sshpass
-      - p '{{qnap_password}}'
-      - rsync
-      - -r 
-      - admin@192.168.0.2:/share/Download/raspberry-server/to_backup/Shaarli/data/*
-      - /var/www/html/Shaarli/data
-  become: yes
-  become_user: pi
-  when: config_exists.stat.exists == False
-
-- name: Make Shaarli usable by www-data
+- name: Make Shaarli data usable by www-data
   file:
     path: /var/www/html/Shaarli
     group: www-data
     owner: www-data
     mode: 0777
     recurse: yes
+  when: config_exists.stat.exists == False
+
+- name: Copy data from QNAP
+  command: sshpass -p "{{qnap_password}}" rsync -r admin@192.168.0.2:/share/Download/raspberry-server/to_backup/Shaarli/data/* /var/www/html/Shaarli/data
+  args:
+    chdir: /var/www/html/Shaarli
+#  become: yes
+#  become_user: www-data
+  when: config_exists.stat.exists == False
 
 - name: Prepare config backup
   file:
