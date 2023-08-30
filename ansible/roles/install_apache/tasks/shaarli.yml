@@ -88,3 +88,14 @@
     version: v3.0.0
   become: yes
   become_user: www-data
+  ignore_errors: true
+
+- name: Allow override all in Apache main config
+  lineinfile:
+    firstmatch: true
+    state: present
+    search_string: 'AllowOverride None'
+    insertafter: '<Directory \/var\/www\/>'
+    line: '    AllowOverride All'
+    path: /etc/apache2/apache2.conf
+  become: yes
