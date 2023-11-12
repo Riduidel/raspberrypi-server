@@ -8,8 +8,8 @@
 - name: Generate one key for connectiong Raspberry to QNAP
   openssh_keypair:
     comment: Clé pour connecter le Raspberry au NAS
+    group: pi
     owner: pi
     # Remember that setting an other file name will only lead to despseration
-    path: /home/pi/.ssh/id_ssh_rsa
-
-# - name: Add the generated key to the QNAP server
+    path: /home/pi/.ssh/id_rsa
+    register: generated_key
