@@ -12,10 +12,6 @@ Le raspberry doit avoir
 
 ## Lancer avec Windows
 
-**Ne pas oublier de créer une clé SSH sur le Raspberry et de se connecter au QNAP avec les commandes suivantes**
-
-
-
 Il faut d'abord installer Docker.
 Dans le dossier `raspberrypi-server`, lancer la commande **dans PowerShell**
 

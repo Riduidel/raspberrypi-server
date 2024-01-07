@@ -12,8 +12,8 @@
     job: "systemctl restart systemd-timesyncd.service"
   become: yes
 
-- name: Disable useless services
-  include_tasks: disable_services.yml
+# - name: Disable useless services
+#   include_tasks: disable_services.yml
 
 #- name: Process APT
 #  include_tasks: apt.yml

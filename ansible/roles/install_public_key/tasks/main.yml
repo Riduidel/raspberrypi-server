@@ -5,11 +5,10 @@
     state: present
     key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVOyoVWn81viJJp0KhODXy2LDM6dX4QhRpMb2y/kRyplDjoXRKOKV/e+WXLRyljFyuD+Kb2u6fZ/2yRD/63ujXHm87zMqJ/6TDgBvKjbI4SmLwyqm9sCpK5EuUPhYkyiCYpPWpJ9jawBsC4+mRHqgxkD3+5POwN5G6XXiU+OlGuOFlqzUbrZCO2NpcI066sQHK1SYue6UQl8fA6wjouEM7VXO5C7UCo9tMkHGK/nrHQrk0e6zgBHXKLJ5sfDdcG3hHEHr7HUfG2Ffx3/TKNaV+sTknQ/W4KCusJuZgddmwA/KrBZm3i31BfGYVRo97LOQK+z+mXPz88FTJYOKgfySfdjqnSgs0efCsGcB1EQ3C+u/8i380lBLZDDZy8aDenvpqrp0+EklEZ1u4XzpWseRzsQFhSSUO4f8x3gwiQv4iDEfbT6s+ovBM+/0ElmArP/pZT6wNCuMHGDHcTCmpGUfs/ygojlUD3mFlxNbUsjmFYFbykLhWZdVMrfMmu/zQSkk= Clé pour le Raspberry PI depuis Keepass"
 
-- name: Generate one key for connectiong Raspberry to QNAP
+- name: Generate one key for connecting Raspberry to QNAP
   openssh_keypair:
     comment: Clé pour connecter le Raspberry au NAS
     group: pi
     owner: pi
     # Remember that setting an other file name will only lead to despseration
     path: /home/pi/.ssh/id_rsa
-    register: generated_key

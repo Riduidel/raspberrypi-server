@@ -1,39 +1,24 @@
 ---
+# - name: Install required packages
+#   apt:
+#     name: "{{ packages }}"
+#   vars:
+#     packages:
+#       - npm
+
 - name: Check if we should download Shaarli
   stat: 
     path: /var/www/html/Shaarli/
   register: shaarli_exists
 
 - name: download Shaarli
-  git:
-    repo: https://github.com/Riduidel/Shaarli.git
-    dest: /var/www/html/Shaarli
-    version: latest
+  unarchive:
+    src: "https://github.com/shaarli/Shaarli/releases/download/{{shaarli_version}}/shaarli-{{shaarli_version}}-full.zip"
+    dest: /var/www/html/
+    remote_src: yes
   become: yes
   become_user: www-data
   when: shaarli_exists.stat.exists == False
-
-- name: Check if composer should run
-  stat: 
-    path: /var/www/html/Shaarli/vendor
-  register: composer_exists
-
-# it will only work with swap enabled !
-- name: Update composer dependencies
-  command: composer install --no-dev --prefer-dist
-  args:
-    chdir: /var/www/html/Shaarli
-  become: yes
-  become_user: www-data
-  when: composer_exists.stat.exists == False
-
-- name: Build front-end
-  command: make build_frontend
-  args:
-    chdir: /var/www/html/Shaarli
-  become: yes
-  become_user: www-data
-  when: composer_exists.stat.exists == False
 
 - name: Check if config is present
   stat: 
@@ -50,11 +35,11 @@
   when: config_exists.stat.exists == False
 
 - name: Copy data from QNAP
-  command: sshpass -p "{{qnap_password}}" rsync -r admin@192.168.0.2:/share/Download/raspberry-server/to_backup/Shaarli/data/* /var/www/html/Shaarli/data
+  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/Shaarli/data/* /var/www/html/Shaarli/data
   args:
     chdir: /var/www/html/Shaarli
-#  become: yes
-#  become_user: www-data
+  become: yes
+  become_user: pi
   when: config_exists.stat.exists == False
 
 - name: Prepare config backup

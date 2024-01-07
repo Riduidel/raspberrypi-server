@@ -38,6 +38,9 @@
   command: a2enconf php{{php_version}}-fpm
   become: yes
 
-- name: reload apache2 config
+- name: enable apache2 service
+  command: systemctl start apache2
+  become: yes
+- name: reload apache2 service
   command: systemctl reload apache2
   become: yes

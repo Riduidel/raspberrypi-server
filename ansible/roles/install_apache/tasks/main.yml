@@ -8,6 +8,7 @@
     - composer
     - yarn
     - git
+    - acl
 
 - name: Install Apache/PHP
   include_tasks: php.yml
@@ -52,8 +53,8 @@
 - name: Install rss-bridge
   include_tasks: rss-bridge.yml
 
-- name: Install Tweetledee
-  include_tasks: tweetledee.yml
+#- name: Install Tweetledee
+#  include_tasks: tweetledee.yml
 
 - name: Install mastodon-rss
   include_tasks: mastodon-rss.yml

@@ -26,7 +26,7 @@
   register: config_exists
 
 - name: Copy data from QNAP
-  command: sshpass -p "{{qnap_password}}" rsync -r admin@192.168.0.2:/share/Download/raspberry-server/to_backup/rss-bridge/* /var/www/html/rss-bridge
+  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/rss-bridge/* /var/www/html/rss-bridge
   args:
     chdir: /var/www/html/rss-bridge
   become: yes

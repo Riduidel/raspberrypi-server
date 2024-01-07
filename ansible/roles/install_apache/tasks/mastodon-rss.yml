@@ -39,6 +39,8 @@
   command: 
     chdir: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
     cmd: git branch --format='%(refname:short)'
+  become: yes
+  become_user: pi
   register: mastodon_rss_on_master
 
 # Then replace the mastodon-rest composer package with the github repository (to later apply the PRs)
@@ -65,7 +67,7 @@
   register: config_exists
 
 - name: Copy data from QNAP
-  command: sshpass -p "{{qnap_password}}" rsync -r admin@192.168.0.2:/share/Download/raspberry-server/to_backup/mastodon-rss/* /var/www/html/mastodon-rss
+  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/mastodon-rss/* /var/www/html/mastodon-rss
   args:
     chdir: /var/www/html/mastodon-rss
   become: yes

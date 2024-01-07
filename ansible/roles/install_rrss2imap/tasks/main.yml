@@ -1,10 +1,11 @@
 ---
-#- name: Install required packages
-#  apt:
-#    name: "{{ packages }}"
-#  vars:
-#    packages:
-#    - rsync
+- name: Install required packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - rsync
+    - sshpass
 
 - name: Check if rrss2imap folder exists
   stat: 
@@ -45,7 +46,7 @@
   register: config_exists
 
 - name: Download config from QNAP if non existing
-  command: sshpass -p "{{qnap_password}}" rsync -r admin@192.168.0.2:/share/Download/raspberry-server/to_backup/rrss2imap/* /home/pi/rrss2imap
+  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/rrss2imap/* /home/pi/rrss2imap
   args:
     chdir: /home/pi/rrss2imap
   when: config_exists.stat.exists == False
