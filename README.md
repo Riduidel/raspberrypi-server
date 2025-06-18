@@ -23,6 +23,19 @@ Entrer le mot de passe maître de Keepass
     cd /ansible
     ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" qnap_password=\"$QNAP_PASSWORD\""
 
+## Lancer avec Linux
+
+Il faut d'abord installer Docker.
+Dans le dossier `raspberrypi-server`, lancer la commande **dans PowerShell**
+
+    ansible.ps1
+
+Entrer le mot de passe maître de Keepass
+
+    mkdir /root/.ssh && ssh-keyscan -t rsa nicolas-delsaux.hd.free.fr > /root/.ssh/known_hosts
+    cd /ansible
+    ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" qnap_password=\"$QNAP_PASSWORD\"" --ask-vault-pass
+
 ## activer certbot
 
     certbot --apache
