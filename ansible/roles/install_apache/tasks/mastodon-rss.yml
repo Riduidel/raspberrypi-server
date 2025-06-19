@@ -17,7 +17,7 @@
     dest: /var/www/html/mastodon-rss
     version: main
   become: yes
-  become_user: pi
+  become_user: www-data
   when: mastodon_rss_exists.stat.exists == False
 
 - name: Check if we should run mastodon-rss composer
@@ -29,10 +29,10 @@
 # We have to run composer, then apply a set of PR I made to the upstream project
 - name: Run composer install
   become: yes
-  become_user: pi
-  composer:
-    command: install
-    working_dir: /var/www/html/mastodon-rss
+  become_user: www-data
+  shell:
+    cmd: composer install
+    chdir: /var/www/html/mastodon-rss
   when: mastodon_rss_vendor_exists.stat.exists == False
 
 - name: Check if we should replace mastodon-rest with our fork
@@ -40,7 +40,7 @@
     chdir: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
     cmd: git branch --format='%(refname:short)'
   become: yes
-  become_user: pi
+  become_user: www-data
   register: mastodon_rss_on_master
 
 # Then replace the mastodon-rest composer package with the github repository (to later apply the PRs)
@@ -49,7 +49,7 @@
     path: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
     state: absent
   become: yes
-  become_user: pi
+  become_user: www-data
   when: mastodon_rss_on_master.stdout == "master"
 
 - name: Replace mastodon-rest with my own fork
@@ -58,7 +58,7 @@
     dest: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
     version: live
   become: yes
-  become_user: pi
+  become_user: www-data
   when: mastodon_rss_on_master.stdout == "master"
 
 - name: Check if config is present
