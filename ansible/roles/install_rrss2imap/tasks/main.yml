@@ -1,4 +1,14 @@
 ---
+# See https://unix.stackexchange.com/a/683867
+# This is due to my inhability to produce arm64 rust binaries
+# See also https://stackoverflow.com/a/33377943/15619
+- name: Add armhf architecture
+  lineinfile: 
+    dest: /var/lib/dpkg/arch 
+    line: "amd64" 
+    create: yes
+  become: yes
+
 - name: Install required packages
   apt:
     name: "{{ packages }}"
@@ -6,6 +16,7 @@
     packages:
     - rsync
     - sshpass
+    - libc6:armhf
 
 - name: Check if rrss2imap folder exists
   stat: 
