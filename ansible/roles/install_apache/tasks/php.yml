@@ -4,7 +4,7 @@
 
 - name: Install php repository
   apt_repository:
-    repo: deb https://packages.sury.org/php/ bullseye main
+    repo: deb https://packages.sury.org/php/ {{raspbian_version}} main
     state: present
 
 # Time to use https://www.tal.org/tutorials/setup-php-7-or-8-apache-raspberry-pi

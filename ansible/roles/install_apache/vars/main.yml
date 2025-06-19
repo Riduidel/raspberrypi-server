@@ -1,2 +1,3 @@
 php_version: 8.1
 shaarli_version: v0.13.0
+raspbian_version: bullseye

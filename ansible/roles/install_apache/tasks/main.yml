@@ -5,7 +5,6 @@
   vars:
     packages:
     - sshpass
-    - composer
     - yarn
     - git
     - acl
