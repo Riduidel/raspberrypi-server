@@ -1,8 +1,8 @@
 - name: Make sure backup folder exists
   file:
-    path: /home/pi/{{item}}
-    group: pi
-    owner: pi
+    path: {{home_folder}}/{{item}}
+    group: nicolas-delsaux
+    owner: nicolas-delsaux
     recurse: yes
     state: directory
   with_items:
@@ -16,5 +16,5 @@
     minute: "10"
     job: "rsync -az --copy-links --copy-dirlinks --log-file=~/log/rsync_backup.log ~/to_backup {{ qnap_admin_user }}@{{ qnap_server_address }}:/share/Download/raspberry-server"
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
 

@@ -18,11 +18,15 @@
     repo: https://github.com/Riduidel/rss-bridge.git
     dest: /var/www/html/rss-bridge
     version: live
+  become: yes
+  become_user: nicolas-delsaux
   when: rss_bridge_exists.stat.exists == False
 
 - name: Check if config is present
   stat: 
     path: /var/www/html/rss-bridge/whitelist.txt
+  become: yes
+  become_user: nicolas-delsaux
   register: config_exists
 
 - name: Copy data from QNAP
@@ -30,7 +34,7 @@
   args:
     chdir: /var/www/html/rss-bridge
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
   when: config_exists.stat.exists == False
 
 - name: Make rss-bridge usable by www-data
@@ -43,16 +47,16 @@
 
 - name: Prepare config backup
   file:
-    path: /home/pi/to_backup/rss-bridge
-    owner: pi
-    group: pi
+    path: {{home_folder}}/to_backup/rss-bridge
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     recurse: true
     state: directory
 
 - name: Immediatly mark config for backup
   file:
     src: /var/www/html/rss-bridge/whitelist.txt
-    dest: /home/pi/to_backup/rss-bridge/whitelist.txt
-    owner: pi
-    group: pi
+    dest: {{home_folder}}/to_backup/rss-bridge/whitelist.txt
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     state: link

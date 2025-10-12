@@ -13,7 +13,7 @@
 - name: Install Apache/PHP
   include_tasks: php.yml
 
-- name: Add pi user to www-data group
+- name: Add nicolas-delsaux user to www-data group
   user:
     name: pi
     shell: /bin/bash

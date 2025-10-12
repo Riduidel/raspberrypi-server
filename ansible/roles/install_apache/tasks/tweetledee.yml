@@ -28,7 +28,7 @@
   args:
     chdir: /var/www/tweetledee
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
   when: config_exists.stat.exists == False
 
 - name: Make tweetledee usable by www-data
@@ -41,18 +41,18 @@
 
 - name: Prepare config backup
   file:
-    path: /home/pi/to_backup/tweetledee/tldlib/keys
-    owner: pi
-    group: pi
+    path: {{home_folder}}/to_backup/tweetledee/tldlib/keys
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     recurse: true
     state: directory
 
 - name: Immediatly mark config for backup
   file:
     src: /var/www/tweetledee/tweetledee/tldlib/keys/tweetledee_keys.php
-    dest: /home/pi/to_backup/tweetledee/tldlib/keys/tweetledee_keys.php
-    owner: pi
-    group: pi
+    dest: {{home_folder}}/to_backup/tweetledee/tldlib/keys/tweetledee_keys.php
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     state: link
 
 
@@ -60,6 +60,6 @@
   file:
     src: /var/www/tweetledee/tweetledee
     dest: /var/www/html/tweetledee
-    owner: pi
-    group: pi
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     state: link

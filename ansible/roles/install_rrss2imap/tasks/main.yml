@@ -9,20 +9,20 @@
 
 - name: Check if rrss2imap folder exists
   stat: 
-    path: /home/pi/rrss2imap/
+    path: {{home_folder}}/rrss2imap/
   register: rss2imap_exists
 
 - name: Creates rrss2imap directory
   file:
-    path: /home/pi/rrss2imap/
+    path: {{home_folder}}/rrss2imap/
     state: directory
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
   when: rss2imap_exists.stat.exists == False
 
 - name: Check if rrss2imap executable exists
   stat: 
-    path: /home/pi/rrss2imap/rrss2imap_raspbian
+    path: {{home_folder}}/rrss2imap/rrss2imap_linux
   register: rss2imap_exec
 
 - name: check latest rrss2imap release
@@ -34,40 +34,40 @@
 
 - name: "Download rrss2imap {{ rrss2imap_latest.json.tag_name }}"
   get_url:
-    url: "https://github.com/Riduidel/rrss2imap/releases/download/{{ rrss2imap_latest.json.tag_name }}/rrss2imap_raspbian"
-    dest: /home/pi/rrss2imap/
+    url: "https://github.com/Riduidel/rrss2imap/releases/download/{{ rrss2imap_latest.json.tag_name }}/rrss2imap_linux"
+    dest: {{home_folder}}/rrss2imap/
     mode: a+x
-    owner: pi
+    owner: nicolas-delsaux
   when: rss2imap_exec.stat.exists == False
 
 - name: Check if config is present
   stat: 
-    path: /home/pi/rrss2imap/config.json
+    path: {{home_folder}}/rrss2imap/config.json
   register: config_exists
 
 - name: Download config from QNAP if non existing
-  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/rrss2imap/* /home/pi/rrss2imap
+  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/rrss2imap/* {{home_folder}}/rrss2imap
   args:
-    chdir: /home/pi/rrss2imap
+    chdir: {{home_folder}}/rrss2imap
   when: config_exists.stat.exists == False
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
 
 - name: Prepare config backup
   file:
-    path: /home/pi/to_backup/rrss2imap
-    owner: pi
-    group: pi
+    path: {{home_folder}}/to_backup/rrss2imap
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     recurse: true
     state: directory
 
 
 - name: Immediatly mark config for backup
   file:
-    src: /home/pi/rrss2imap/{{item}}
-    dest: /home/pi/to_backup/rrss2imap/{{item}}
-    owner: pi
-    group: pi
+    src: {{home_folder}}/rrss2imap/{{item}}
+    dest: {{home_folder}}/to_backup/rrss2imap/{{item}}
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     state: link
   with_items:
     - config.json
@@ -76,40 +76,40 @@
 - name: List loaded streams
   command:
   args:
-    chdir: /home/pi/rrss2imap
+    chdir: {{home_folder}}/rrss2imap
     argv:
-      - ./rrss2imap_raspbian
+      - ./rrss2imap_linux
       - list
   register: rrss2imap_list
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
 
 - name: Import all OPML content (because config.json doesn't seems to contain anything)
   command:
   args:
-    chdir: /home/pi/rrss2imap
+    chdir: {{home_folder}}/rrss2imap
     argv:
-      - ./rrss2imap_raspbian
+      - ./rrss2imap_linux
       - import
       - r2e.opml
   when: rrss2imap_list.stdout==""
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
 
 - name: Create crontab entry to have feed entries
   cron:
     name: Read feeds
     hour: "*/2"
     minute: "0"
-    job: "cd /home/pi/rrss2imap && ./rrss2imap_raspbian run > /home/pi/rrss2imap/r2e.log 2>&1"
+    job: "cd {{home_folder}}/rrss2imap && ./rrss2imap_linux run > {{home_folder}}/rrss2imap/r2e.log 2>&1"
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
 
 - name: Create crontab entry to backup feeds
   cron:
     name: Backup feeds
     hour: "0"
     minute: "0"
-    job: "cd /home/pi/rrss2imap/ && ./rrss2imap_raspbian export r2e.opml"
+    job: "cd {{home_folder}}/rrss2imap/ && ./rrss2imap_linux export r2e.opml"
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux

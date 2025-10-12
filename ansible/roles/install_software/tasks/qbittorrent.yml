@@ -17,9 +17,9 @@
     state: present
     create_home: yes
 
-- name: Adding user pi to qBitTorrent
+- name: Adding user nicolas-delsaux to qBitTorrent
   user:
-    name: pi
+    name: nicolas-delsaux
     groups: qbittorrent
     append: true
 
@@ -36,13 +36,13 @@
     state: started
     enabled: yes
 
-- name: Make sure incoming folder is accessible by pi user
+- name: Make sure incoming folder is accessible by nicolas-delsaux user
   file:
     path: /var/lib/mldonkey/incoming
     mode: 777
     recurse: yes
   become: yes
-  become_user: pi
+#  become_user: nicolas-delsaux
 
 - name: Create crontab entry to make sure incoming files can be easily deleted after copy
   cron:
@@ -50,7 +50,7 @@
     hour: "0"
     minute: "0"
     weekday: "5"
-    job: "chmod -R ugoa+w /home/pi/incoming/"
+    job: "chmod -R ugoa+w {{home_folder}}/incoming/"
   become: yes
 
 - name: Create crontab entry to backup downloaded files
@@ -59,7 +59,7 @@
     hour: "1"
     minute: "0"
     weekday: "5"
-    job: "rsync  --remove-source-files -az --copy-dirlinks --log-file=/home/pi/log/rsync_mldonkey.log /home/pi/incoming admin@192.168.0.2:/share/Download/mldonkey"
+    job: "rsync  --remove-source-files -az --copy-dirlinks --log-file={{home_folder}}/log/rsync_mldonkey.log {{home_folder}}/incoming admin@192.168.1.2:/share/Download/mldonkey"
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
 

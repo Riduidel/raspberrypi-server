@@ -17,7 +17,7 @@
     dest: /var/www/html/mastodon-rss
     version: main
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
   when: mastodon_rss_exists.stat.exists == False
 
 - name: Check if we should run mastodon-rss composer
@@ -29,7 +29,7 @@
 # We have to run composer, then apply a set of PR I made to the upstream project
 - name: Run composer install
   become: yes
-  become_user: pi
+  become_user: www-data
   composer:
     command: install
     working_dir: /var/www/html/mastodon-rss
@@ -40,7 +40,7 @@
     chdir: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
     cmd: git branch --format='%(refname:short)'
   become: yes
-  become_user: pi
+  become_user: www-data
   register: mastodon_rss_on_master
 
 # Then replace the mastodon-rest composer package with the github repository (to later apply the PRs)
@@ -49,8 +49,8 @@
     path: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
     state: absent
   become: yes
-  become_user: pi
-  when: mastodon_rss_on_master.stdout == "master"
+  become_user: www-data
+  when: mastodon_rss_on_master.stdout == "main"
 
 - name: Replace mastodon-rest with my own fork
   git:
@@ -58,7 +58,7 @@
     dest: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
     version: live
   become: yes
-  become_user: pi
+  become_user: www-data
   when: mastodon_rss_on_master.stdout == "master"
 
 - name: Check if config is present
@@ -71,7 +71,7 @@
   args:
     chdir: /var/www/html/mastodon-rss
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
   when: config_exists.stat.exists == False
 
 - name: Make mastodon-rss usable by www-data
@@ -84,16 +84,16 @@
 
 - name: Prepare config backup
   file:
-    path: /home/pi/to_backup/mastodon-rss
-    owner: pi
-    group: pi
+    path: {{home_folder}}/to_backup/mastodon-rss
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     recurse: true
     state: directory
 
 - name: Immediatly mark config for backup
   file:
     src: /var/www/html/mastodon-rss/config.php
-    dest: /home/pi/to_backup/mastodon-rss/config.php
-    owner: pi
-    group: pi
+    dest: {{home_folder}}/to_backup/mastodon-rss/config.php
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     state: link

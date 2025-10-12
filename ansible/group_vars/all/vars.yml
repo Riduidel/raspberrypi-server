@@ -1,7 +1,8 @@
 ---
-ansible_user: "pi"
+ansible_user: "nicolas-delsaux"
 # ansible_ssh_private_key_file: "keys/id_rsa"
 # dbs_ssh_pubkey: "{{ lookup('file', 'keys/id_rsa.pub') }}"
+home_folder: "/home/{{ansible_user}}"
 
 dbs_set_hostname: true
 dbs_set_locale: true
@@ -25,11 +26,11 @@ dbs_groups: []
 
 dbs_users: False
 
-dbs_apt_default_host: "raspbian.raspberrypi.org"
-dbs_apt_components: "buster main contrib non-free rpi"
+#dbs_apt_default_host: "raspbian.raspberrypi.org"
+#dbs_apt_components: "buster main contrib non-free rpi"
 
-script_install_path: "/home/pi"
+#script_install_path: "/home/pi"
 
-raspberry_address: 192.168.0.4
-qnap_server_address: 192.168.0.2
+raspberry_address: 192.168.1.4
+qnap_server_address: 192.168.1.2
 qnap_admin_user: "admin"

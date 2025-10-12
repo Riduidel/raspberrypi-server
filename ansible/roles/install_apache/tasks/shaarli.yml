@@ -39,23 +39,23 @@
   args:
     chdir: /var/www/html/Shaarli
   become: yes
-  become_user: pi
+  become_user: nicolas-delsaux
   when: config_exists.stat.exists == False
 
 - name: Prepare config backup
   file:
-    path: /home/pi/to_backup/Shaarli/
-    owner: pi
-    group: pi
+    path: {{home_folder}}/to_backup/Shaarli/
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     recurse: true
     state: directory
 
 - name: Immediatly mark config for backup
   file:
     src: /var/www/html/Shaarli/data
-    dest: /home/pi/to_backup/Shaarli/data
-    owner: pi
-    group: pi
+    dest: {{home_folder}}/to_backup/Shaarli/data
+    owner: nicolas-delsaux
+    group: nicolas-delsaux
     state: link
 
 - name: Make Shaarli usable by www-data
