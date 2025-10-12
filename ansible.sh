@@ -18,7 +18,7 @@ systemUser="${systemUser:-$defaultKeepass}"
 # keepassxc command-line is obviously slightly different
 
 qnapPassword=$(echo "$password" | keepassxc-cli show $keepass "QNAP" --show-protected --quiet --attributes "password")
-raspbianPassword=$(echo "$password" | keepassxc-cli show $keepass "Raspberry" --show-protected --quiet --attributes "password")
+raspbianPassword=$(echo "$password" | keepassxc-cli show $keepass "Minidell" --show-protected --quiet --attributes "password")
 
 currentFolder=${PWD}
 # Finally start the docker image!
