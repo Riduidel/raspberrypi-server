@@ -1,0 +1,9 @@
+---
+collections:
+- name: community.general
+  version: 9.1.0
+
+roles:
+- src: https://github.com/LorenzoBettini/my_nerd_fonts_role
+  scm: git
+  version: 0e968e4c9d76e91d0b6e4f54759240610ec7d650
