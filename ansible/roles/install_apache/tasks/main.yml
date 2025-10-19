@@ -15,7 +15,7 @@
 
 - name: Add nicolas-delsaux user to www-data group
   user:
-    name: pi
+    name: nicolas-delsaux
     shell: /bin/bash
     groups: www-data
     append: yes
@@ -44,14 +44,14 @@
     owner: www-data
     mode: 0777
 
-- name: Install Let's Encrypt
-  include_tasks: letsencrypt.yml
-
-- name: Install Shaarli
-  include_tasks: shaarli.yml
-
-- name: Install rss-bridge
-  include_tasks: rss-bridge.yml
+#- name: Install Let's Encrypt
+#  include_tasks: letsencrypt.yml
+#
+#- name: Install Shaarli
+#  include_tasks: shaarli.yml
+#
+#- name: Install rss-bridge
+#  include_tasks: rss-bridge.yml
 
 #- name: Install Tweetledee
 #  include_tasks: tweetledee.yml

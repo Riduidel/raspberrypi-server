@@ -1,18 +1,18 @@
 ---
-- name: install qBitTorrent
+- name: Install qBitTorrent
   apt:
     name: qbittorrent-nox
 
-- name: create qBitTorrent group
+- name: Create qBitTorrent group
   group:
     name: qbittorrent
     state: present
 
-- name: create qBitTorrent user
+- name: Create qBitTorrent user
   user:
     name: qbittorrent
-    groups: qbittorrent
-    shell: /sbin/nologin
+    groups: qbittorrent,users
+    shell: /bin/bash
     append: yes
     state: present
     create_home: yes
@@ -22,6 +22,14 @@
     name: nicolas-delsaux
     groups: qbittorrent
     append: true
+
+- name: Give right permissions to qbittorrent home
+  file:
+    path: /home/qbittorrent
+    state: directory
+    mode: u=rwx,g=rwx,o=r
+    recurse: true
+  become: yes
 
 - name: Copy qBitTorrent systemd service file to server
   template:
@@ -38,8 +46,8 @@
 
 - name: Make sure incoming folder is accessible by nicolas-delsaux user
   file:
-    path: /var/lib/mldonkey/incoming
-    mode: 777
+    path: /home/qbittorrent/incoming
+    mode: u=rwx,g=rwx,o=rwx,a=rw
     recurse: yes
   become: yes
 #  become_user: nicolas-delsaux
@@ -50,7 +58,7 @@
     hour: "0"
     minute: "0"
     weekday: "5"
-    job: "chmod -R ugoa+w {{home_folder}}/incoming/"
+    job: "chmod -R ugoa+w /home/qbittorrent/incoming/"
   become: yes
 
 - name: Create crontab entry to backup downloaded files
@@ -59,7 +67,30 @@
     hour: "1"
     minute: "0"
     weekday: "5"
-    job: "rsync  --remove-source-files -az --copy-dirlinks --log-file={{home_folder}}/log/rsync_mldonkey.log {{home_folder}}/incoming admin@192.168.1.2:/share/Download/mldonkey"
+    job: "rsync  --remove-source-files -az --copy-dirlinks --log-file={{home_folder}}/log/rsync_mldonkey.log /home/qbittorrent/incoming admin@192.168.1.2:/share/Download/mldonkey"
   become: yes
   become_user: nicolas-delsaux
 
+- name: Check if VueTorrent version file exists
+  stat: 
+    path: /home/qbittorrent/vuetorrent/version.txt
+  register: vuetorrent_index
+  become: true
+
+- name: Get latest VueTorrent release url
+  uri:
+    url: https://api.github.com/repos/VueTorrent/VueTorrent/releases/latest
+    return_content: true
+  when: vuetorrent_index.stat.exists == False
+  register: vuetorrent_latest
+  become: true
+  become_user: qbittorrent
+
+- name: Download VueTorrent {{ vuetorrent_latest.json.tag_name }}
+  unarchive: 
+    src: "https://github.com/VueTorrent/VueTorrent/releases/download/{{ vuetorrent_latest.json.tag_name }}/vuetorrent.zip"
+    dest: /home/qbittorrent/
+    remote_src: true 
+  become: true
+  become_user: qbittorrent
+  when: vuetorrent_index.stat.exists == False
