@@ -1,0 +1,89 @@
+---
+- name: Install Podman packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - podman
+    - podman-docker
+
+- name: Ensure group "docker" exists with correct gid
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: "Adding users"  
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  loop:
+    - "{{ansible_user}}"
+    - docker
+
+- name: Install Guerite
+  community.docker.docker_container:
+    name: guerite
+    image: ghcr.io/rcarmo/guerite
+    auto-remove: true
+    state: started
+    restart_policy: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    env:
+      GUERITE_LOG_LEVEL: INFO
+      GUERITE_PRUNE_CRON: docker image prune -f
+
+
+- name: Install dockkeep
+  community.docker.docker_container:
+    name: dockkeep
+    image: docker.io/dockpeek/dockpeek:latest
+    auto-remove: true
+    state: started
+    restart_policy: unless-stopped
+    env:
+      SECRET_KEY: "{{DOCKKEEP_SECRET}}"
+      USERNAME: "{{DOCKKEEP_ADMIN_MAIL}}"
+      PASSWORD: "{{DOCKKEEP_ADMIN_PASS}}"
+    ports:
+      - "3420:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels: 
+    # Of course I want to have that container auto-updated
+      guerite.update: "*/10 * * * * "
+
+- name: Install reproxy
+  community.docker.docker_container:
+    name: reproxy
+    image: ghcr.io/umputun/reproxy
+    auto-remove: true
+    state: started
+    restart_policy: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels: 
+    # Of course I want to have that container auto-updated
+      guerite.update: "*/10 * * * * "
+    command: --docker.auto
+
+- name: Install ctop
+  copy:
+    content: |
+      #!/bin/sh
+      docker run --rm -ti --name=ctop --volume /var/run/docker.sock:/var/run/docker.sock:ro  quay.io/vektorlab/ctop:latest
+    mode: '0750'
+    dest: "{{local_bin_folder}}/ctop"
+  become: true
+  become_user: "{{ansible_user}}"
+
+- name: Install Ponysay
+  copy:
+    content: |
+      #!/bin/sh
+      docker run -ti --rm mpepping/ponysay $@
+    mode: '0750'
+    dest: "{{local_bin_folder}}/ponysay"
+  become: true
+  become_user: "{{ansible_user}}"
