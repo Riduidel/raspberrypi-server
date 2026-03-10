@@ -13,7 +13,7 @@ Le raspberry doit avoir
 ## Lancer avec Windows
 
 Il faut d'abord installer Docker.
-Dans le dossier `raspberrypi-server`, lancer la commande **dans PowerShell**
+A la racine du projet, lancer la commande **dans PowerShell**
 
     ansible.ps1
 
@@ -22,12 +22,12 @@ Entrer le mot de passe maître de Keepass
     mkdir /root/.ssh && ssh-keyscan -t rsa nicolas-delsaux.hd.free.fr > /root/.ssh/known_hosts
     cd /ansible
     ansible-galaxy install -r requirements.yml
-    ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" ansible_sudo_password=\"$RASPBIAN_PASSWORD\" qnap_password=\"$QNAP_PASSWORD\""  --ask-vault-pass
+    ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" ansible_sudo_pass=\"$RASPBIAN_PASSWORD\" qnap_password=\"$QNAP_PASSWORD\""  --ask-vault-pass
 
 ## Lancer avec Linux
 
 Il faut d'abord installer Docker.
-Dans le dossier `raspberrypi-server`, lancer la commande **dans PowerShell**
+A la racine du projet, lancer la commande **dans un terminal externe**
 
     ansible.sh
 
