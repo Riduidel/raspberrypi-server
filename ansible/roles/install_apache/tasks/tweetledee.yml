@@ -28,7 +28,7 @@
   args:
     chdir: /var/www/tweetledee
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
   when: config_exists.stat.exists == False
 
 - name: Make tweetledee usable by www-data

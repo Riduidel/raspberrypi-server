@@ -1,11 +1,24 @@
 ---
-- name: Install Podman packages
+- name: Add Docker debian repository
+  deb822_repository:
+    name: Docker
+    state: present
+    uris: https://download.docker.com/linux/ubuntu
+    suites: "{{ansible_distribution_release}}"
+    signed_by:  https://download.docker.com/linux/ubuntu/gpg
+    components:
+      - stable
+
+- name: Install Docker packages
   apt:
     name: "{{ packages }}"
   vars:
     packages:
-    - podman
-    - podman-docker
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    - docker-buildx-plugin
+    - docker-compose-plugin
 
 - name: Ensure group "docker" exists with correct gid
   ansible.builtin.group:
@@ -22,10 +35,11 @@
     - docker
 
 - name: Install Guerite
+  become: yes
+  become_user: "{{ansible_user}}"
   community.docker.docker_container:
     name: guerite
     image: ghcr.io/rcarmo/guerite
-    auto-remove: true
     state: started
     restart_policy: unless-stopped
     volumes:
@@ -34,18 +48,45 @@
       GUERITE_LOG_LEVEL: INFO
       GUERITE_PRUNE_CRON: docker image prune -f
 
+#- name: Create Traefik configuration file
+#  become: yes
+#  copy:
+#    dest: /etc/traefik.yml
+#    content: |
+#      # traefik.yml
+#      api:
+#        insecure: true
+#      entryPoints:
+#        web:
+#          address: ":80"
+#      providers:
+#        docker: {}
 
-- name: Install dockkeep
+#- name: Install Traefik
+#  become: yes
+#  become_user: "{{ansible_user}}"
+#  community.docker.docker_container:
+#    ports:
+#      - "{{docker_input}}:80"
+#      - "8080:8080"
+#    volumes:
+#      - "/etc/traefik.yml:/etc/traefik/traefik.yml"
+#      - "/var/run/docker.sock:/var/run/docker.sock"
+#    image: docker.io/traefik:v3.6
+#    name: traefik
+
+- name: Install dockpeek
+  become: yes
+  become_user: "{{ansible_user}}"
   community.docker.docker_container:
-    name: dockkeep
+    name: dockpeek
     image: docker.io/dockpeek/dockpeek:latest
-    auto-remove: true
     state: started
     restart_policy: unless-stopped
     env:
-      SECRET_KEY: "{{DOCKKEEP_SECRET}}"
-      USERNAME: "{{DOCKKEEP_ADMIN_MAIL}}"
-      PASSWORD: "{{DOCKKEEP_ADMIN_PASS}}"
+      SECRET_KEY: "{{DOCKPEEK_SECRET}}"
+      USERNAME: "{{DOCKPEEK_ADMIN_MAIL}}"
+      PASSWORD: "{{DOCKPEEK_ADMIN_PASS}}"
     ports:
       - "3420:8000"
     volumes:
@@ -55,18 +96,28 @@
       guerite.update: "*/10 * * * * "
 
 - name: Install reproxy
+  become: yes
+  become_user: "{{ansible_user}}"
   community.docker.docker_container:
     name: reproxy
     image: ghcr.io/umputun/reproxy
-    auto-remove: true
     state: started
     restart_policy: unless-stopped
+    ports:
+      - "{{docker_input}}:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels: 
     # Of course I want to have that container auto-updated
       guerite.update: "*/10 * * * * "
-    command: --docker.auto
+    command: --docker.enabled --docker.auto
+
+- name: Make sure we have the .local/bin folder
+  ansible.builtin.file:
+    path: "{{local_bin_folder}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
 
 - name: Install ctop
   copy:

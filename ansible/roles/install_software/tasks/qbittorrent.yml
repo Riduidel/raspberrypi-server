@@ -69,7 +69,7 @@
     weekday: "5"
     job: "rsync  --remove-source-files -az --copy-dirlinks --log-file={{home_folder}}/log/rsync_mldonkey.log /home/qbittorrent/incoming admin@192.168.1.2:/share/Download/mldonkey"
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
 
 - name: Check if VueTorrent version file exists
   stat: 

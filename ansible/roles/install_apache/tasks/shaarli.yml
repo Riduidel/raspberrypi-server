@@ -1,25 +1,4 @@
 ---
-# - name: Install required packages
-#   apt:
-#     name: "{{ packages }}"
-#   vars:
-#     packages:
-#       - npm
-
-- name: Check if we should download Shaarli
-  stat: 
-    path: /var/www/html/Shaarli/
-  register: shaarli_exists
-
-- name: download Shaarli
-  unarchive:
-    src: "https://github.com/shaarli/Shaarli/releases/download/{{shaarli_version}}/shaarli-{{shaarli_version}}-full.zip"
-    dest: /var/www/html/
-    remote_src: yes
-  become: yes
-  become_user: www-data
-  when: shaarli_exists.stat.exists == False
-
 - name: Check if config is present
   stat: 
     path: /var/www/html/Shaarli/data/config.json.php
@@ -34,17 +13,17 @@
     recurse: yes
   when: config_exists.stat.exists == False
 
-- name: Copy data from QNAP
-  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/Shaarli/data/* /var/www/html/Shaarli/data
-  args:
-    chdir: /var/www/html/Shaarli
-  become: yes
-  become_user: nicolas-delsaux
-  when: config_exists.stat.exists == False
+#- name: Copy data from QNAP
+#  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/Shaarli/data/* /var/www/html/Shaarli/data
+#  args:
+#    chdir: /var/www/html/Shaarli
+#  become: yes
+#  become_user: "{{ansible_user}}"
+#  when: config_exists.stat.exists == False
 
 - name: Prepare config backup
   file:
-    path: {{home_folder}}/to_backup/Shaarli/
+    path: "{{home_folder}}/to_backup/Shaarli/"
     owner: nicolas-delsaux
     group: nicolas-delsaux
     recurse: true
@@ -53,34 +32,32 @@
 - name: Immediatly mark config for backup
   file:
     src: /var/www/html/Shaarli/data
-    dest: {{home_folder}}/to_backup/Shaarli/data
+    dest: "{{home_folder}}/to_backup/Shaarli/data"
     owner: nicolas-delsaux
     group: nicolas-delsaux
     state: link
 
-- name: Make Shaarli usable by www-data
-  file:
-    path: /var/www/html/Shaarli
-    group: www-data
-    owner: www-data
-    mode: 0777
-    recurse: yes
+#- name: Download mastodon plugin
+#  git:
+#    repo: https://github.com/kalvn/shaarli2mastodon/
+#    dest: /var/www/html/Shaarli/plugins/shaarli2mastodon
+#    version: v3.0.0
+#  become: yes
+#  become_user: www-data
+#  ignore_errors: true
 
-- name: Download mastodon plugin
-  git:
-    repo: https://github.com/kalvn/shaarli2mastodon/
-    dest: /var/www/html/Shaarli/plugins/shaarli2mastodon
-    version: v3.0.0
+- name: Install Shaarli base image
   become: yes
-  become_user: www-data
-  ignore_errors: true
-
-- name: Allow override all in Apache main config
-  lineinfile:
-    firstmatch: true
-    state: present
-    search_string: 'AllowOverride None'
-    insertafter: '<Directory \/var\/www\/>'
-    line: '    AllowOverride All'
-    path: /etc/apache2/apache2.conf
-  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_container:
+    name: Shaarli
+    image: shaarli/shaarli:latest
+    state: started
+    restart_policy: unless-stopped
+    labels: 
+    # Of course I want to have that container auto-updated
+      guerite.update: "*/10 * * * * "
+      reproxy.port: 80
+    volumes:
+      - /var/www/html/Shaarli/data:/var/www/shaarli/data 
+      - /var/www/html/Shaarli/plugins/:/var/www/shaarli/plugins/

@@ -9,8 +9,8 @@
     - git
     - acl
 
-- name: Install Apache/PHP
-  include_tasks: php.yml
+#- name: Install Apache/PHP
+#  include_tasks: php.yml
 
 - name: Add nicolas-delsaux user to www-data group
   user:
@@ -35,25 +35,25 @@
   become: yes
 
 
-- name: Create simple php template file
-  template:
-    src: index.php.j2
-    dest: /var/www/html/state.php
-    group: www-data
-    owner: www-data
-    mode: 0777
+#- name: Create simple php template file
+#  template:
+#    src: index.php.j2
+#    dest: /var/www/html/state.php
+#    group: www-data
+#    owner: www-data
+#    mode: 0777
 
 #- name: Install Let's Encrypt
 #  include_tasks: letsencrypt.yml
-#
-#- name: Install Shaarli
-#  include_tasks: shaarli.yml
-#
+
+- name: Install Shaarli
+  include_tasks: shaarli.yml
+
 #- name: Install rss-bridge
 #  include_tasks: rss-bridge.yml
 
 #- name: Install Tweetledee
 #  include_tasks: tweetledee.yml
 
-- name: Install mastodon-rss
-  include_tasks: mastodon-rss.yml
+#- name: Install mastodon-rss
+#  include_tasks: mastodon-rss.yml

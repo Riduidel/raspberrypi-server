@@ -17,7 +17,7 @@
     dest: /var/www/html/mastodon-rss
     version: main
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
   when: mastodon_rss_exists.stat.exists == False
 
 - name: Check if we should run mastodon-rss composer
@@ -71,7 +71,7 @@
   args:
     chdir: /var/www/html/mastodon-rss
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
   when: config_exists.stat.exists == False
 
 - name: Make mastodon-rss usable by www-data

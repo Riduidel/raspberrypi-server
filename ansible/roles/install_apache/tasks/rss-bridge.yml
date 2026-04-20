@@ -19,14 +19,14 @@
     dest: /var/www/html/rss-bridge
     version: live
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
   when: rss_bridge_exists.stat.exists == False
 
 - name: Check if config is present
   stat: 
     path: /var/www/html/rss-bridge/whitelist.txt
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
   register: config_exists
 
 - name: Copy data from QNAP
@@ -34,7 +34,7 @@
   args:
     chdir: /var/www/html/rss-bridge
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
   when: config_exists.stat.exists == False
 
 - name: Make rss-bridge usable by www-data
