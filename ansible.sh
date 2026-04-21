@@ -26,6 +26,6 @@ dockPeekUserpass=$(echo "$password" | keepassxc-cli show $keepass "DockPeek" --s
 currentFolder=${PWD}
 # Finally start the docker image!
 # See https://stackoverflow.com/a/36648428 for the ssh socket madness
-docker="sudo docker run --rm --name ansible -t -i --mount type=bind,source=$SSH_AUTH_SOCK,target=/ssh-agent --env SSH_AUTH_SOCK=/ssh-agent  -e  DOCKPEEK_SECRET=\"$dockPeekSecret\" -e  DOCKPEEK_ADMIN_MAIL=\"$dockPeekUsername\" -e  DOCKPEEK_ADMIN_PASS=\"$dockPeekUserpass\" -e QNAP_PASSWORD=\"$qnapPassword\" -e RASPBIAN_PASSWORD=\"$raspbianPassword\" -v $currentFolder/ansible:/ansible:ro willhallonline/ansible:2.16.4-bookworm-slim /bin/bash"
+docker="sudo docker run --rm --name ansible-for-server -t -i --mount type=bind,source=$SSH_AUTH_SOCK,target=/ssh-agent --env SSH_AUTH_SOCK=/ssh-agent  -e  DOCKPEEK_SECRET=\"$dockPeekSecret\" -e  DOCKPEEK_ADMIN_MAIL=\"$dockPeekUsername\" -e  DOCKPEEK_ADMIN_PASS=\"$dockPeekUserpass\" -e QNAP_PASSWORD=\"$qnapPassword\" -e RASPBIAN_PASSWORD=\"$raspbianPassword\" -v $currentFolder/ansible:/ansible:ro willhallonline/ansible:2.16.4-bookworm-slim /bin/bash"
 
 bash -c "$docker"
