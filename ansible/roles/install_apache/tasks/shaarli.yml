@@ -57,7 +57,12 @@
     labels: 
     # Of course I want to have that container auto-updated
       guerite.update: "*/10 * * * * "
-      reproxy.port: 80
+      traefik.http.routers.Shaarli.rule: "PathPrefix(`/Shaarli/`)"
+      traefik.http.routers.Shaarli.middlewares: "Shaarli@docker"
+      traefik.http.middlewares.Shaarli-prefix.stripprefix.prefixes: "/Shaarli"
+      traefik.http.middlewares.Shaarli-rewrite.plugin.rewritebody.rewrites[0].regex: "/tpl/"
+      traefik.http.middlewares.Shaarli-rewrite.plugin.rewritebody.rewrites[0].replacement: "/Shaarli/tpl/"
+      traefik.http.middlewares.Shaarli.chain.middlewares: "Shaarli-prefix,Shaarli-rewrite"
     volumes:
       - /var/www/html/Shaarli/data:/var/www/shaarli/data 
       - /var/www/html/Shaarli/plugins/:/var/www/shaarli/plugins/
