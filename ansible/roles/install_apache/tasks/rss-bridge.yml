@@ -29,13 +29,13 @@
   become_user: "{{ansible_user}}"
   register: config_exists
 
-- name: Copy data from QNAP
-  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/rss-bridge/* /var/www/html/rss-bridge
-  args:
-    chdir: /var/www/html/rss-bridge
-  become: yes
-  become_user: "{{ansible_user}}"
-  when: config_exists.stat.exists == False
+#- name: Copy data from QNAP
+#  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/rss-bridge/* /var/www/html/rss-bridge
+#  args:
+#    chdir: /var/www/html/rss-bridge
+#  become: yes
+#  become_user: "{{ansible_user}}"
+#  when: config_exists.stat.exists == False
 
 - name: Make rss-bridge usable by www-data
   file:
@@ -47,7 +47,7 @@
 
 - name: Prepare config backup
   file:
-    path: {{home_folder}}/to_backup/rss-bridge
+    path: "{{home_folder}}/to_backup/rss-bridge"
     owner: nicolas-delsaux
     group: nicolas-delsaux
     recurse: true
@@ -56,7 +56,28 @@
 - name: Immediatly mark config for backup
   file:
     src: /var/www/html/rss-bridge/whitelist.txt
-    dest: {{home_folder}}/to_backup/rss-bridge/whitelist.txt
+    dest: "{{home_folder}}/to_backup/rss-bridge/whitelist.txt"
     owner: nicolas-delsaux
     group: nicolas-delsaux
     state: link
+
+- name: Install rss-bridge base image
+  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_container:
+    name: rss-bridge
+    image: rssbridge/rss-bridge:latest
+    state: started
+    restart_policy: unless-stopped
+    labels: 
+    # Of course I want to have that container auto-updated
+      guerite.update: "*/10 * * * * "
+      traefik.http.routers.rss-bridge.rule: "PathPrefix(`/rss-bridge/`)"
+      traefik.http.routers.rss-bridge.middlewares: "rss-bridge@docker"
+      traefik.http.middlewares.rss-bridge-prefix.stripprefix.prefixes: "/rss-bridge"
+      traefik.http.middlewares.rss-bridge-rewrite.plugin.rewrite.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.rss-bridge-rewrite.plugin.rewrite.rewrites[0].replacement: "\"/rss-bridge/"
+      traefik.http.middlewares.rss-bridge.chain.middlewares: "rss-bridge-prefix,rss-bridge-rewrite"
+    volumes:
+      - /var/www/html/rss-bridge/config:/config
+      - /var/www/html/rss-bridge/whitelist.txt:/whitelist.txt

@@ -37,14 +37,14 @@
     group: nicolas-delsaux
     state: link
 
-#- name: Download mastodon plugin
-#  git:
-#    repo: https://github.com/kalvn/shaarli2mastodon/
-#    dest: /var/www/html/Shaarli/plugins/shaarli2mastodon
-#    version: v3.0.0
-#  become: yes
-#  become_user: www-data
-#  ignore_errors: true
+- name: Download mastodon plugin
+  git:
+    repo: https://github.com/kalvn/shaarli2mastodon/
+    dest: /var/www/html/Shaarli/plugins/shaarli2mastodon
+    version: v3.0.0
+  become: yes
+  become_user: www-data
+  ignore_errors: true
 
 - name: Install Shaarli base image
   become: yes
@@ -60,8 +60,8 @@
       traefik.http.routers.Shaarli.rule: "PathPrefix(`/Shaarli/`)"
       traefik.http.routers.Shaarli.middlewares: "Shaarli@docker"
       traefik.http.middlewares.Shaarli-prefix.stripprefix.prefixes: "/Shaarli"
-      traefik.http.middlewares.Shaarli-rewrite.plugin.rewritebody.rewrites[0].regex: "/tpl/"
-      traefik.http.middlewares.Shaarli-rewrite.plugin.rewritebody.rewrites[0].replacement: "/Shaarli/tpl/"
+      traefik.http.middlewares.Shaarli-rewrite.plugin.rewrite.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.Shaarli-rewrite.plugin.rewrite.rewrites[0].replacement: "\"/Shaarli/"
       traefik.http.middlewares.Shaarli.chain.middlewares: "Shaarli-prefix,Shaarli-rewrite"
     volumes:
       - /var/www/html/Shaarli/data:/var/www/shaarli/data 

@@ -49,8 +49,8 @@
 - name: Install Shaarli
   include_tasks: shaarli.yml
 
-#- name: Install rss-bridge
-#  include_tasks: rss-bridge.yml
+- name: Install rss-bridge
+  include_tasks: rss-bridge.yml
 
 #- name: Install Tweetledee
 #  include_tasks: tweetledee.yml
