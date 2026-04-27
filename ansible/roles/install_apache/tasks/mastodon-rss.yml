@@ -66,13 +66,13 @@
     path: /var/www/html/mastodon-rss/config.php
   register: config_exists
 
-- name: Copy data from QNAP
-  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/mastodon-rss/* /var/www/html/mastodon-rss
-  args:
-    chdir: /var/www/html/mastodon-rss
-  become: yes
-  become_user: "{{ansible_user}}"
-  when: config_exists.stat.exists == False
+#- name: Copy data from QNAP
+#  command: sshpass -p "{{qnap_password}}" rsync -r "{{ qnap_admin_user }}"@"{{ qnap_server_address }}":/share/Download/raspberry-server/to_backup/mastodon-rss/* /var/www/html/mastodon-rss
+#  args:
+#    chdir: /var/www/html/mastodon-rss
+#  become: yes
+#  become_user: "{{ansible_user}}"
+#  when: config_exists.stat.exists == False
 
 - name: Make mastodon-rss usable by www-data
   file:
@@ -84,7 +84,7 @@
 
 - name: Prepare config backup
   file:
-    path: {{home_folder}}/to_backup/mastodon-rss
+    path: "{{home_folder}}/to_backup/mastodon-rss"
     owner: nicolas-delsaux
     group: nicolas-delsaux
     recurse: true
@@ -93,7 +93,27 @@
 - name: Immediatly mark config for backup
   file:
     src: /var/www/html/mastodon-rss/config.php
-    dest: {{home_folder}}/to_backup/mastodon-rss/config.php
+    dest: "{{home_folder}}/to_backup/mastodon-rss/config.php"
     owner: nicolas-delsaux
     group: nicolas-delsaux
     state: link
+
+- name: Install mastodon-rss image
+  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_container:
+    name: mastodon-rss
+    image: riduidel/mastodon-rss:latest
+    state: started
+    restart_policy: unless-stopped
+    labels: 
+    # Of course I want to have that container auto-updated
+      guerite.update: "*/10 * * * * "
+      traefik.http.routers.mastodon-rss.rule: "PathPrefix(`/mastodon-rss/`)"
+      traefik.http.routers.mastodon-rss.middlewares: "mastodon-rss@docker"
+      traefik.http.middlewares.mastodon-rss-prefix.stripprefix.prefixes: "/mastodon-rss"
+      traefik.http.middlewares.mastodon-rss-rewrite.plugin.rewrite.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.mastodon-rss-rewrite.plugin.rewrite.rewrites[0].replacement: "\"/mastodon-rss/"
+      traefik.http.middlewares.mastodon-rss.chain.middlewares: "mastodon-rss-prefix,mastodon-rss-rewrite"
+    volumes:
+      - /var/www/html/mastodon-rss/config.php:/var/www/mastodon-rss/config.php 
