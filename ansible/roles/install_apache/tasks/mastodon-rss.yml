@@ -26,7 +26,7 @@
   register: mastodon_rss_vendor_exists
 
 # Mind you, copying repo is not enough
-# We have to run composer, then apply a set of PR I made to the upstream project
+# We have to run composer
 - name: Run composer install
   become: yes
   become_user: www-data
@@ -34,32 +34,6 @@
     command: install
     working_dir: /var/www/html/mastodon-rss
   when: mastodon_rss_vendor_exists.stat.exists == False
-
-- name: Check if we should replace mastodon-rest with our fork
-  command: 
-    chdir: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
-    cmd: git branch --format='%(refname:short)'
-  become: yes
-  become_user: www-data
-  register: mastodon_rss_on_master
-
-# Then replace the mastodon-rest composer package with the github repository (to later apply the PRs)
-- name: Remove mastodon-rest
-  file:
-    path: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
-    state: absent
-  become: yes
-  become_user: www-data
-  when: mastodon_rss_on_master.stdout == "main"
-
-- name: Replace mastodon-rest with my own fork
-  git:
-    repo: https://github.com/Riduidel/mastodon-rest.git
-    dest: /var/www/html/mastodon-rss/vendor/phediverse/mastodon-rest
-    version: live
-  become: yes
-  become_user: www-data
-  when: mastodon_rss_on_master.stdout == "master"
 
 - name: Check if config is present
   stat: 
