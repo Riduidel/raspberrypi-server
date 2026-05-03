@@ -75,8 +75,8 @@
       traefik.http.routers.rss-bridge.rule: "PathPrefix(`/rss-bridge/`)"
       traefik.http.routers.rss-bridge.middlewares: "rss-bridge@docker"
       traefik.http.middlewares.rss-bridge-prefix.stripprefix.prefixes: "/rss-bridge"
-      traefik.http.middlewares.rss-bridge-rewrite.plugin.rewrite.rewrites[0].regex: "\"/"
-      traefik.http.middlewares.rss-bridge-rewrite.plugin.rewrite.rewrites[0].replacement: "\"/rss-bridge/"
+      traefik.http.middlewares.rss-bridge-rewrite.plugin.rewritebody.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.rss-bridge-rewrite.plugin.rewritebody.rewrites[0].replacement: "\"/rss-bridge/"
       traefik.http.middlewares.rss-bridge.chain.middlewares: "rss-bridge-prefix,rss-bridge-rewrite"
     volumes:
       - /var/www/html/rss-bridge/config:/config

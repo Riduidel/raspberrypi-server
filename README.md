@@ -37,6 +37,7 @@ Entrer le mot de passe maître de Keepass
     mkdir /root/.ssh && ssh-keyscan -t rsa nicolas-delsaux.hd.free.fr > /root/.ssh/known_hosts
     cd /ansible
     ansible-galaxy install -r requirements.yml
+    echo "Fully configured, now running"
     ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" ansible_sudo_pass=\"$RASPBIAN_PASSWORD\" qnap_password=\"$QNAP_PASSWORD\"  -e  DOCKPEEK_SECRET=\"$DOCKPEEK_SECRET\" -e  DOCKPEEK_ADMIN_MAIL=\"$DOCKPEEK_ADMIN_MAIL\" -e  DOCKPEEK_ADMIN_PASS=\"$DOCKPEEK_ADMIN_PASS\""  --ask-vault-pass
 
 ## activer certbot

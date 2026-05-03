@@ -86,8 +86,8 @@
       traefik.http.routers.mastodon-rss.rule: "PathPrefix(`/mastodon-rss/`)"
       traefik.http.routers.mastodon-rss.middlewares: "mastodon-rss@docker"
       traefik.http.middlewares.mastodon-rss-prefix.stripprefix.prefixes: "/mastodon-rss"
-      traefik.http.middlewares.mastodon-rss-rewrite.plugin.rewrite.rewrites[0].regex: "\"/"
-      traefik.http.middlewares.mastodon-rss-rewrite.plugin.rewrite.rewrites[0].replacement: "\"/mastodon-rss/"
+      traefik.http.middlewares.mastodon-rss-rewrite.plugin.rewritebody.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.mastodon-rss-rewrite.plugin.rewritebody.rewrites[0].replacement: "\"/mastodon-rss/"
       traefik.http.middlewares.mastodon-rss.chain.middlewares: "mastodon-rss-prefix,mastodon-rss-rewrite"
     volumes:
       - /var/www/html/mastodon-rss/config.php:/var/www/mastodon-rss/config.php 

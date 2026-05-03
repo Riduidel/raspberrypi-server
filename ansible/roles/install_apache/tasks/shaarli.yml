@@ -60,8 +60,8 @@
       traefik.http.routers.Shaarli.rule: "PathPrefix(`/Shaarli/`)"
       traefik.http.routers.Shaarli.middlewares: "Shaarli@docker"
       traefik.http.middlewares.Shaarli-prefix.stripprefix.prefixes: "/Shaarli"
-      traefik.http.middlewares.Shaarli-rewrite.plugin.rewrite.rewrites[0].regex: "\"/"
-      traefik.http.middlewares.Shaarli-rewrite.plugin.rewrite.rewrites[0].replacement: "\"/Shaarli/"
+      traefik.http.middlewares.Shaarli-rewrite.plugin.rewritebody.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.Shaarli-rewrite.plugin.rewritebody.rewrites[0].replacement: "\"/Shaarli/"
       traefik.http.middlewares.Shaarli.chain.middlewares: "Shaarli-prefix,Shaarli-rewrite"
     volumes:
       - /var/www/html/Shaarli/data:/var/www/shaarli/data 
