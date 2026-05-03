@@ -34,5 +34,3 @@ dbs_users: False
 raspberry_address: 192.168.1.4
 qnap_server_address: 192.168.1.2
 qnap_admin_user: "admin"
-
-docker_input: 10080

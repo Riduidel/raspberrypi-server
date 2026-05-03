@@ -58,9 +58,28 @@
       # traefik.yml
       api:
         insecure: true
+      # traefik.yaml - Configuration statique
+      certificatesResolvers:
+        letsencrypt:
+          acme:
+            email: "admin@nicolas-delsaux.hd.free.fr"  # Email pour les notifications
+            storage: /etc/traefik/acme.json   # Où stocker les certificats
+            caServer: "https://acme-v02.api.letsencrypt.org/directory"
+            httpChallenge:
+              entryPoint: web                 # Entrypoint pour le challenge HTTP
       entryPoints:
         web:
           address: ":80"
+          http:
+            redirections:
+              entryPoint:
+                to: websecure
+                scheme: https
+                permanent: true
+        websecure:
+          address: ":443"
+          http:
+            tls: true
       providers:
         docker: {}
       experimental:
@@ -69,17 +88,36 @@
                 moduleName: "github.com/traefik/plugin-rewritebody"
                 version: "v0.3.1"
 
+- name: Create Let's encrypt configuration folder tree
+  become: yes
+  become_user: "{{ansible_user}}"
+  file:
+    owner: "{{ansible_user}}"
+    path: "{{home_folder}}/.config/traefik/letsencrypt"
+    state: directory
+
+#- name: Create Let's encrypt configuration file
+#  become: yes
+#  become_user: "{{ansible_user}}"
+#  file:
+#    owner: "{{ansible_user}}"
+#    path: "{{home_folder}}/.config/traefik/letsencrypt/acme.json"
+#    state: touch
+#    mode: '0600'
+
 - name: Install Traefik
   become: yes
   become_user: "{{ansible_user}}"
   community.docker.docker_container:
     ports:
-      - "{{docker_input}}:80"
+      - "80:80"
+      - "443:443"
       - "8080:8080"
     volumes:
       - "/etc/traefik.yml:/etc/traefik/traefik.yml"
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "/var/log:/logs:rw"
+      - "~/.config/traefik/letsencrypt:/letsencrypt"
     image: docker.io/traefik:v3.6
     name: traefik
 
@@ -102,27 +140,13 @@
     labels: 
     # Of course I want to have that container auto-updated
       guerite.update: "*/10 * * * * "
-      traefik.http.routers.dockpeek.rule: "PathPrefix(`/dockpeek/`)"
+      traefik.enable: "true" 
+      traefik.http.routers.dockpeek.entrypoints: "websecure"
+      traefik.http.routers.dockpeek.tls: "true"
+      traefik.http.routers.dockpeek.tls.certresolver: "letsencrypt" 
+      traefik.http.routers.dockpeek.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/dockpeek/`)"
       traefik.http.middlewares.dockpeek.stripprefix.prefixes: "/dockpeek"
       traefik.http.routers.dockpeek.middlewares: "dockpeek@docker"
-
-
-#- name: Install reproxy
-#  become: yes
-#  become_user: "{{ansible_user}}"
-#  community.docker.docker_container:
-#    name: reproxy
-#    image: ghcr.io/umputun/reproxy
-#    state: started
-#    restart_policy: unless-stopped
-#    ports:
-#      - "{{docker_input}}:8080"
-#    volumes:
-#      - /var/run/docker.sock:/var/run/docker.sock
-#    labels: 
-#    # Of course I want to have that container auto-updated
-#      guerite.update: "*/10 * * * * "
-#    command: --docker.enabled --docker.auto
 
 - name: Make sure we have the .local/bin folder
   ansible.builtin.file:
