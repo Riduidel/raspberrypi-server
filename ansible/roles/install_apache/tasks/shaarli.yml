@@ -61,12 +61,13 @@
       traefik.http.routers.Shaarli.entrypoints: "websecure"
       traefik.http.routers.Shaarli.tls: "true"
       traefik.http.routers.Shaarli.tls.certresolver: "letsencrypt" 
-      traefik.http.routers.Shaarli.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/Shaarli/`)"
+      traefik.http.routers.Shaarli.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/Shaarli`)"
       traefik.http.routers.Shaarli.middlewares: "Shaarli@docker"
       traefik.http.middlewares.Shaarli-prefix.stripprefix.prefixes: "/Shaarli"
-      traefik.http.middlewares.Shaarli-rewrite.plugin.rewritebody.rewrites[0].regex: "\"/"
-      traefik.http.middlewares.Shaarli-rewrite.plugin.rewritebody.rewrites[0].replacement: "\"/Shaarli/"
-      traefik.http.middlewares.Shaarli.chain.middlewares: "Shaarli-prefix,Shaarli-rewrite"
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewritebody.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewritebody.rewrites[0].replacement: "\"/Shaarli/"
+      traefik.http.middlewares.Shaarli-rewrite-location.plugin.redirectLocation.default: "true"
+      traefik.http.middlewares.Shaarli.chain.middlewares: "Shaarli-prefix,Shaarli-rewrite-body,Shaarli-rewrite-location"
     volumes:
       - /var/www/html/Shaarli/data:/var/www/shaarli/data 
       - /var/www/html/Shaarli/plugins/:/var/www/shaarli/plugins/

@@ -5,12 +5,11 @@
   vars:
     packages:
     - sshpass
-    - yarn
     - git
     - acl
 
-#- name: Install Apache/PHP
-#  include_tasks: php.yml
+#- name: Remove Apache/PHP
+#  include_tasks: no_apache_php.yml
 
 - name: Add nicolas-delsaux user to www-data group
   user:
@@ -26,25 +25,6 @@
     owner: www-data
     mode: u=rwx,g=rwx,o=rwx
     recurse: yes
-
-- name: Make sure /var/log/apache2 is always present (because it is removed due to tmpfs)
-  cron:
-    name: Recreate apache log folder
-    special_time: reboot
-    job: "mkdir /var/log/apache2 && chown www-data:www-data /var/log/apache2"
-  become: yes
-
-
-#- name: Create simple php template file
-#  template:
-#    src: index.php.j2
-#    dest: /var/www/html/state.php
-#    group: www-data
-#    owner: www-data
-#    mode: 0777
-
-#- name: Install Let's Encrypt
-#  include_tasks: letsencrypt.yml
 
 - name: Install Shaarli
   include_tasks: shaarli.yml
