@@ -2,5 +2,8 @@
 - name: Install qBitTorrent
   include_tasks: qbittorrent.yml
 
-- name: Configure shell
-  include_tasks: shell.yml
+- name: Install Komga
+  include_tasks: komga.yml
+
+#- name: Configure shell
+#  include_tasks: shell.yml

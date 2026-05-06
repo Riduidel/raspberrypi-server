@@ -96,7 +96,11 @@
           fullUrlRewrite:
             moduleName: "github.com/e-flux-platform/full-url-rewrite-traefik-plugin"
             version: "v0.0.6"
-
+- name: Create Docker bridge to the internet network
+  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_network:
+    name: bridge_to_the_internet
 - name: Create Let's encrypt configuration folder tree
   become: yes
   become_user: "{{ansible_user}}"
@@ -118,49 +122,49 @@
   become: yes
   become_user: "{{ansible_user}}"
   community.docker.docker_container:
+    name: traefik
+    image: docker.io/traefik:v3.6
+    restart_policy: always
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
+    networks:
+      - name: "bridge_to_the_internet"
     volumes:
       - "/etc/traefik.yml:/etc/traefik/traefik.yml"
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "/var/log:/logs:rw"
       - "~/.config/traefik/letsencrypt:/letsencrypt"
-    image: docker.io/traefik:v3.6
-    name: traefik
+      
+- name: Make sure we have the traefik-manager folder
+  ansible.builtin.file:
+    path: "{{folders}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+  vars:
+    folders:
+    - "{{home_folder}}/traefik-manager"
+    - "{{home_folder}}/traefik-manager/config"
+    - "{{home_folder}}/traefik-manager/backups"
 
-- name: Install dockpeek
+- name: Install traefik-manager
   become: yes
   become_user: "{{ansible_user}}"
   community.docker.docker_container:
-    name: dockpeek
-    image: docker.io/dockpeek/dockpeek:latest
-    state: started
-    restart_policy: unless-stopped
-    env:
-      SECRET_KEY: "{{DOCKPEEK_SECRET}}"
-      USERNAME: "{{DOCKPEEK_ADMIN_MAIL}}"
-      PASSWORD: "{{DOCKPEEK_ADMIN_PASS}}"
+    name: traefik-manager
+    image: ghcr.io/chr0nzz/traefik-manager:latest
+    restart_policy: "unless-stopped"
     ports:
-      - "3420:8000"
+      - "5000:5000"
+    networks:
+      - name: "bridge_to_the_internet"
+    env:
+      COOKIE_SECURE: "false"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    labels: 
-    # Of course I want to have that container auto-updated
-      guerite.update: "*/10 * * * * "
-      traefik.enable: "true" 
-      traefik.http.routers.dockpeek.entrypoints: "websecure"
-      traefik.http.routers.dockpeek.tls: "true"
-      traefik.http.routers.dockpeek.tls.certresolver: "letsencrypt" 
-      traefik.http.routers.dockpeek.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/dockpeek/`)"
-      traefik.http.routers.dockpeek.middlewares: "dockpeek@docker"
-      traefik.http.middlewares.dockpeek-prefix.stripprefix.prefixes: "/dockpeek"
-      traefik.http.middlewares.dockpeek-rewrite-response.plugin.rewritebody.rewrites[0].regex: "\"/"
-      traefik.http.middlewares.dockpeek-rewrite-response.plugin.rewritebody.rewrites[0].replacement: "\"/dockpeek/"
-      traefik.http.middlewares.dockpeek-rewrite-request.plugin.fullUrlRewrite.regex: "(.*)\/dockpeek\/dockpeek\/(.*)"
-      traefik.http.middlewares.dockpeek-rewrite-request.plugin.fullUrlRewrite.replacement: "$1/dockpeek/$2"
-      traefik.http.middlewares.dockpeek.chain.middlewares: "dockpeek-prefix,dockpeek-rewrite-response,dockpeek-rewrite-request"
+      - "{{home_folder}}/traefik-manager/config:/app/config"
+      - "{{home_folder}}/traefik-manager/backups:/app/backups"
 
 - name: Make sure we have the .local/bin folder
   ansible.builtin.file:

@@ -69,6 +69,8 @@
     image: rssbridge/rss-bridge:latest
     state: started
     restart_policy: unless-stopped
+    networks:
+      - name: "bridge_to_the_internet"
     labels: 
     # Of course I want to have that container auto-updated
       guerite.update: "*/10 * * * * "

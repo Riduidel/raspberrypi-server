@@ -1,56 +1,12 @@
 ---
-- name: Install qBitTorrent
-  apt:
-    name: qbittorrent-nox
-
-- name: Create qBitTorrent group
-  group:
-    name: qbittorrent
-    state: present
-
-- name: Create qBitTorrent user
-  user:
-    name: qbittorrent
-    groups: qbittorrent,users
-    shell: /bin/bash
-    append: yes
-    state: present
-    create_home: yes
-
-- name: Adding user nicolas-delsaux to qBitTorrent
-  user:
-    name: nicolas-delsaux
-    groups: qbittorrent
-    append: true
-
-- name: Give right permissions to qbittorrent home
-  file:
-    path: /home/qbittorrent
-    state: directory
-    mode: u=rwx,g=rwx,o=r
-    recurse: true
-  become: yes
-
-- name: Copy qBitTorrent systemd service file to server
-  template:
-    src: qbittorrent.service
-    dest: /etc/systemd/system
-    owner: root
-    group: root
-
-- name: Activate qBitTorrent service
-  systemd:
-    name: qbittorrent
-    state: started
-    enabled: yes
-
-- name: Make sure incoming folder is accessible by nicolas-delsaux user
-  file:
-    path: /home/qbittorrent/incoming
-    mode: u=rwx,g=rwx,o=rwx,a=rw
-    recurse: yes
-  become: yes
-#  become_user: nicolas-delsaux
+# Quite sure there is something weird regarding ownership maniuplated by Docker ...
+#- name: Make sure incoming folder is accessible by nicolas-delsaux user
+#  file:
+#    path: "{{home_folder}}/qbittorrent"
+#    state: directory
+#    owner: "{{ansible_user}}"
+#  become: yes
+#  become_user: "{{ansible_user}}"
 
 - name: Create crontab entry to make sure incoming files can be easily deleted after copy
   cron:
@@ -58,7 +14,7 @@
     hour: "0"
     minute: "0"
     weekday: "5"
-    job: "chmod -R ugoa+w /home/qbittorrent/incoming/"
+    job: "chmod -R ugoa+w {{home_folder}}/qbittorrent"
   become: yes
 
 - name: Create crontab entry to backup downloaded files
@@ -67,30 +23,52 @@
     hour: "1"
     minute: "0"
     weekday: "5"
-    job: "rsync  --remove-source-files -az --copy-dirlinks --log-file={{home_folder}}/log/rsync_mldonkey.log /home/qbittorrent/incoming admin@192.168.1.2:/share/Download/mldonkey"
+    job: "rsync  --remove-source-files -az --copy-dirlinks --log-file={{home_folder}}/log/rsync_mldonkey.log {{home_folder}}/qbittorrent admin@192.168.1.2:/share/Download/mldonkey"
   become: yes
   become_user: "{{ansible_user}}"
 
-- name: Check if VueTorrent version file exists
-  stat: 
-    path: /home/qbittorrent/vuetorrent/version.txt
-  register: vuetorrent_index
-  become: true
+- name: Make sure config folder exists
+  file:
+    path: /etc/qBitTorrent
+    state: directory
 
-- name: Get latest VueTorrent release url
-  uri:
-    url: https://api.github.com/repos/VueTorrent/VueTorrent/releases/latest
-    return_content: true
-  when: vuetorrent_index.stat.exists == False
-  register: vuetorrent_latest
-  become: true
-  become_user: qbittorrent
-
-- name: Download VueTorrent {{ vuetorrent_latest.json.tag_name }}
-  unarchive: 
-    src: "https://github.com/VueTorrent/VueTorrent/releases/download/{{ vuetorrent_latest.json.tag_name }}/vuetorrent.zip"
-    dest: /home/qbittorrent/
-    remote_src: true 
-  become: true
-  become_user: qbittorrent
-  when: vuetorrent_index.stat.exists == False
+- name: Install qBittorrent image
+  become: yes
+  community.docker.docker_container:
+    name: qbittorrent
+    image: lscr.io/linuxserver/qbittorrent:latest
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "bridge_to_the_internet"
+    ports:
+      - "6881:6881"
+      - "6881:6881/udp"
+    env:
+      TZ: "Europe/Paris"
+      WEBUI_PORT: "8080"
+      TORRENTING_PORT: "6881"
+      DOCKER_MODS: "ghcr.io/vuetorrent/vuetorrent-lsio-mod:latest"
+    volumes:
+      - "{{home_folder}}/qbittorrent:/downloads"
+      - "/etc/qBitTorrent/:/config"
+    labels: 
+    # Thanks to https://github.com/qbittorrent/qBittorrent/wiki/Traefik-Reverse-Proxy-for-Web-UI
+    # Of course I want to have that container auto-updated
+      guerite.update: "*/10 * * * * "
+      traefik.enable: "true"
+      traefik.http.services.qb.loadbalancer.server.port: "8080"
+      traefik.http.routers.qb.entrypoints: "websecure"
+      traefik.http.routers.qb.tls: "true"
+      traefik.http.routers.qb.tls.certresolver: "letsencrypt" 
+      traefik.http.routers.qb.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/qBitTorrent`)"
+      traefik.http.routers.qb.middlewares: "qb@docker"
+      traefik.http.middlewares.qb-headers.headers.customrequestheaders.X-Frame-Options: "SAMEORIGIN"
+      traefik.http.middlewares.qb-headers.headers.customrequestheaders.Referer: ""
+      traefik.http.middlewares.qb-headers.headers.customrequestheaders.Origin: ""
+      traefik.http.middlewares.qb-redirect.redirectregex.regex: "^(.*)/qBitTorrent$$"
+      traefik.http.middlewares.qb-redirect.redirectregex.replacement: "$$1/qBitTorrent/"
+      traefik.http.middlewares.qb-prefix.stripprefix.prefixes: "/qBitTorrent"
+      traefik.http.middlewares.qb-rewrite-body.plugin.rewritebody.rewrites[0].regex: "qBittorrent WebUI"
+      traefik.http.middlewares.qb-rewrite-body.plugin.rewritebody.rewrites[0].replacement: "pouet"
+      traefik.http.middlewares.qb.chain.middlewares: "qb-rewrite-body,qb-prefix,qb-headers"

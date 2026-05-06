@@ -54,6 +54,8 @@
     image: shaarli/shaarli:latest
     state: started
     restart_policy: unless-stopped
+    networks:
+      - name: "bridge_to_the_internet"
     labels: 
     # Of course I want to have that container auto-updated
       guerite.update: "*/10 * * * * "
@@ -67,7 +69,7 @@
       traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewritebody.rewrites[0].regex: "\"/"
       traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewritebody.rewrites[0].replacement: "\"/Shaarli/"
       traefik.http.middlewares.Shaarli-rewrite-location.plugin.redirectLocation.default: "true"
-      traefik.http.middlewares.Shaarli.chain.middlewares: "Shaarli-prefix,Shaarli-rewrite-body,Shaarli-rewrite-location"
+      traefik.http.middlewares.Shaarli.chain.middlewares: "Shaarli-rewrite-body,Shaarli-prefix,Shaarli-rewrite-location"
     volumes:
       - /var/www/html/Shaarli/data:/var/www/shaarli/data 
       - /var/www/html/Shaarli/plugins/:/var/www/shaarli/plugins/
