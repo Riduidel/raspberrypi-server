@@ -58,7 +58,6 @@
       # traefik.yml
       api:
         insecure: true
-      # traefik.yaml - Configuration statique
       certificatesResolvers:
         letsencrypt:
           acme:
@@ -82,6 +81,14 @@
             tls: true
       providers:
         docker: {}
+      log:
+        filePath: "/var/log/traefik/standard.log"
+        level: INFO
+        compress: true
+      accessLog:
+        filePath: "/var/log/traefik/access.log"
+        # JSON format
+        format: json
       experimental:
         plugins:
           redirectLocation:
@@ -134,8 +141,10 @@
     volumes:
       - "/etc/traefik.yml:/etc/traefik/traefik.yml"
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - "/var/log:/logs:rw"
+      - "/var/log:/var/log:rw"
       - "~/.config/traefik/letsencrypt:/letsencrypt"
+    labels:
+      guerite.update: "*/10 * * * * "
       
 - name: Make sure we have the traefik-manager folder
   ansible.builtin.file:
@@ -162,9 +171,15 @@
       - name: "bridge_to_the_internet"
     env:
       COOKIE_SECURE: "false"
+      ACCESS_LOG_PATH: "/var/log/traefik/access.log"
+      STATIC_CONFIG_PATH: "/etc/traefik/traefik.yml"
     volumes:
+      - "/etc/traefik.yml:/etc/traefik/traefik.yml"
+      - "/var/log:/var/log:rw"
       - "{{home_folder}}/traefik-manager/config:/app/config"
       - "{{home_folder}}/traefik-manager/backups:/app/backups"
+    labels:
+      guerite.update: "*/10 * * * * "
 
 - name: Make sure we have the .local/bin folder
   ansible.builtin.file:
