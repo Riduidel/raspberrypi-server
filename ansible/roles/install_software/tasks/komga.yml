@@ -27,7 +27,8 @@
       SERVER_SERVLET_CONTEXT_PATH: "/komga"
     volumes:
       - "/etc/komga:/config"
-      - "{{home_folder}}/komga:/data"
+      - "{{home_folder}}/komga/library:/data"
+      - "{{home_folder}}/komga/import:/import"
     labels: 
     # Of course I want to have that container auto-updated
       guerite.update: "*/10 * * * * "
