@@ -73,7 +73,7 @@
       - name: "bridge_to_the_internet"
     labels: 
     # Of course I want to have that container auto-updated
-      guerite.update: "*/10 * * * * "
+      guerite.update: "{{guerite_crontab}}"
       traefik.enable: "true"
       traefik.http.routers.rss-bridge.entrypoints: "websecure"
       traefik.http.routers.rss-bridge.tls: "true"

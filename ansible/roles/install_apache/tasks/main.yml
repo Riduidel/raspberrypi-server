@@ -8,6 +8,10 @@
     - git
     - acl
 
+- name: Install pykeepass
+  ansible.builtin.pip: 
+    name: pykeepass
+  delegate_to: localhost 
 #- name: Remove Apache/PHP
 #  include_tasks: no_apache_php.yml
 

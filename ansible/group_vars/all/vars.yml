@@ -34,3 +34,8 @@ dbs_users: False
 raspberry_address: 192.168.1.4
 qnap_server_address: 192.168.1.2
 qnap_admin_user: "admin"
+
+keepass_db: "/keepass.kdbx"
+keepass_password: "{{ lookup('ansible.builtin.env', 'ANSIBLE_KEEPASS_PSW') }}"
+
+guerite_crontab: "0 0 * * *"

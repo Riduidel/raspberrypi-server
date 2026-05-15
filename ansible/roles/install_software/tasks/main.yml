@@ -1,6 +1,14 @@
 ---
+- name: Install pykeepass
+  ansible.builtin.pip: 
+    name: pykeepass
+  delegate_to: localhost 
+
 - name: Install Komga
   include_tasks: komga.yml
+
+- name: Install Transmission
+  include_tasks: transmission.yml
 
 #- name: Configure shell
 #  include_tasks: shell.yml

@@ -1,0 +1,2 @@
+transmission_entry: "{{ lookup('torie_coding.keepass.lookup', 'entry', database=keepass_db, database_password=keepass_password, title='Transmission') }}"
+tubesync_entry: "{{ lookup('torie_coding.keepass.lookup', 'entry', database=keepass_db, database_password=keepass_password, title='tubesync') }}"

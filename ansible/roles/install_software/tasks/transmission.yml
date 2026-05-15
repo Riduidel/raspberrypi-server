@@ -1,0 +1,74 @@
+---
+# Quite sure there is something weird regarding ownership manipulated by Docker ...
+#- name: Make sure Download folder is accessible by nicolas-delsaux user
+#  file:
+#    path: "{{folders}}"
+#    state: directory
+#    owner: "{{ansible_user}}"
+#    mode: "a=rw"
+#  become: yes
+#  become_user: "{{ansible_user}}"
+#  vars:
+#    folders:
+#    - "{{home_folder}}/Downloads"
+#    - "{{home_folder}}/Downloads/complete"
+#    - "{{home_folder}}/Downloads/incomplete"
+
+- name: Create crontab entry to make sure Download files can be easily deleted after copy
+  cron:
+    name: Make downloaded files freely writable
+    hour: "0"
+    minute: "0"
+    weekday: "5"
+    job: "chmod -R ugoa+w {{home_folder}}/Downloads"
+  become: yes
+
+- name: Create crontab entry to backup downloaded files
+  cron:
+    name: Backup transmission downloads
+    hour: "1"
+    minute: "0"
+    weekday: "5"
+    job: "rsync  --remove-source-files -az --copy-dirlinks --log-file={{home_folder}}/log/rsync_transmission.log {{home_folder}}/Downloads/complete admin@192.168.1.2:/share/Download/torrents"
+  become: yes
+  become_user: "{{ansible_user}}"
+
+- name: Make sure config folder exists
+  file:
+    path: /etc/transmission
+    state: directory
+
+- name: Install Transmission image
+  become: yes
+  community.docker.docker_container:
+    name: transmission
+    image: linuxserver/transmission:latest
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "bridge_to_the_internet"
+    ports:
+      - '51413:51413'
+      - '51413:51413/udp'
+    env:
+      TZ: "Europe/Paris"
+      USER: "{{transmission_entry.username}}"
+      PASS: "{{transmission_entry.password}}"
+      DOCKER_MODS: "linuxserver/mods:transmission-env-var-settings"
+    volumes:
+      - "{{home_folder}}/Downloads:/downloads"
+      - "/etc/transmission/:/config"
+    labels: 
+    # Thanks to https://github.com/transmissionittorrent/transmissionittorrent/wiki/Traefik-Reverse-Proxy-for-Web-UI
+    # Of course I want to have that container auto-updated
+      guerite.update: "{{guerite_crontab}}"
+      traefik.enable: "true"
+      traefik.http.services.transmission.loadbalancer.server.port: "9091"
+      traefik.http.routers.transmission.entrypoints: "websecure"
+      traefik.http.routers.transmission.tls: "true"
+      traefik.http.routers.transmission.tls.certresolver: "letsencrypt" 
+      traefik.http.routers.transmission.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/transmission`)"
+      traefik.http.routers.transmission.middlewares: "transmission@docker"
+#      traefik.http.middlewares.transmission-prefix.stripprefix.prefixes: "/transmission"
+      traefik.http.middlewares.transmission-rewrite-location.plugin.redirectLocation.default: "true"
+      traefik.http.middlewares.transmission.chain.middlewares: "transmission-rewrite-location"

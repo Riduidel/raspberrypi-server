@@ -1,0 +1,57 @@
+---
+- name: Add Docker debian repository
+  deb822_repository:
+    name: Docker
+    state: present
+    uris: https://download.docker.com/linux/ubuntu
+    suites: "{{ansible_distribution_release}}"
+    signed_by:  https://download.docker.com/linux/ubuntu/gpg
+    components:
+      - stable
+
+- name: Install Docker packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    - docker-buildx-plugin
+    - docker-compose-plugin
+
+- name: Install pykeepass
+  ansible.builtin.pip: 
+    name: pykeepass
+  delegate_to: localhost 
+
+- name: Ensure group "docker" exists with correct gid
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: "Adding users"  
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  loop:
+    - "{{ansible_user}}"
+    - docker
+
+- name: Install Guerite
+  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_container:
+    name: guerite
+    image: ghcr.io/rcarmo/guerite
+    state: started
+    restart_policy: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      traefik.enable: "false"
+    env:
+      GUERITE_LOG_LEVEL: INFO
+      GUERITE_PRUNE_CRON: docker image prune -f
+
