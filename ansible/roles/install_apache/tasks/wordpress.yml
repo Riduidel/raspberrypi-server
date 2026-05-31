@@ -1,0 +1,73 @@
+---
+- name: Make sure we have the MariaDB folder
+  ansible.builtin.file:
+    path: "{{folders}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+  vars:
+    folders:
+    - "{{home_folder}}/mariadb"
+
+- name: Install MariaDB
+  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_container:
+    name: mariadb
+    image: bitnami/mariadb:latest
+    state: started
+    restart_policy: unless-stopped
+    ports:
+      - "3306:3306"
+    networks:
+      - name: "bridge_to_the_internet"
+    env:
+      MARIADB_ROOT_USER: "{{mariadb_root_entry.username}}"
+      MARIADB_ROOT_PASSWORD: "{{mariadb_root_entry.password}}"
+      MARIADB_DATABASE: "poecile"
+      MARIADB_USER: "{{mariadb_wordpress_entry.username}}"
+      MARIADB_PASSWORD: "{{mariadb_wordpress_entry.password}}"
+    volumes:
+      - "{{home_folder}}/mariadb:/bitnami/mariadb:rw"
+
+- name: Install Wordpress image
+  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_container:
+    name: poecile
+    image: wordpress:latest
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "bridge_to_the_internet"
+    env:
+      WORDPRESS_BLOG_NAME: "Poecile"
+      WORDPRESS_ENABLE_REVERSE_PROXY: "yes"
+      WORDPRESS_USERNAME: "{{poecile_entry.username}}"
+      WORDPRESS_PASSWORD: "{{poecile_entry.password}}"
+      WORDPRESS_EMAIL: "{{poecile_entry.email}}"
+      WORDPRESS_FIRST_NAME: "{{poecile_entry.firstname}}"
+      WORDPRESS_LAST_NAME: "{{poecile_entry.lastname}}"
+      WORDPRESS_DATABASE_HOST: mariadb
+      WORDPRESS_DATABASE_NAME: poecile
+      WORDPRESS_DATABASE_USER: "{{mariadb_wordpress_entry.username}}"
+      WORDPRESS_DATABASE_PASSWORD: "{{mariadb_wordpress_entry.password}}"
+    labels: 
+    # Of course I want to have that container auto-updated
+      guerite.update: "{{guerite_crontab}}"
+      traefik.enable: "true"
+      traefik.http.routers.wordpress.entrypoints: "websecure"
+      traefik.http.routers.wordpress.tls: "true"
+      traefik.http.routers.wordpress.tls.certresolver: "letsencrypt" 
+      traefik.http.routers.wordpress.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/blog`)"
+      traefik.http.routers.wordpress.middlewares: "wordpress@docker"
+      traefik.http.middlewares.wordpress-prefix.stripprefix.prefixes: "/blog"
+      traefik.http.middlewares.wordpress-rewrite-body.plugin.rewritebody.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.wordpress-rewrite-body.plugin.rewritebody.rewrites[0].replacement: "\"/blog/"
+      traefik.http.middlewares.wordpress-rewrite-location.plugin.redirectLocation.default: "true"
+      traefik.http.middlewares.wordpress.chain.middlewares: "wordpress-prefix,wordpress-rewrite-location"
+    volumes:
+      - /var/www/html/wordpress/data:/var/www/wordpress/data 
+      - /var/www/html/wordpress/plugins/:/var/www/wordpress/plugins/
+    links:
+      - mariadb:mariadb

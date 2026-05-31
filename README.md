@@ -41,10 +41,6 @@ Entrer le mot de passe maître de Keepass
     echo "Fully configured, now running"
     ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" ansible_sudo_pass=\"$RASPBIAN_PASSWORD\"" --ask-vault-pass
 
-## activer certbot
-
-    certbot --apache
-
 ## Tracabilité
 
 `raspbian-bootstrap` est une simplification de https://github.com/rhietala/raspberry-ansible/

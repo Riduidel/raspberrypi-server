@@ -10,5 +10,8 @@
 - name: Install Transmission
   include_tasks: transmission.yml
 
+- name: Install Universal Media Server
+  include_tasks: universalmediaserver.yaml
+
 #- name: Configure shell
 #  include_tasks: shell.yml

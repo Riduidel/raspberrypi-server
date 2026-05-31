@@ -41,3 +41,9 @@
 
 - name: Install mastodon-rss
   include_tasks: mastodon-rss.yml
+
+#- name: Install wordpress
+#  include_tasks: wordpress.yml
+#
+- name: Install grav
+  include_tasks: grav.yml

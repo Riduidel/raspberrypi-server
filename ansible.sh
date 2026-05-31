@@ -23,7 +23,7 @@ raspbianPassword=$(echo "$password" | keepassxc-cli show $keepass "Minidell" --s
 currentFolder=${PWD}
 # Finally start the docker image!
 # See https://stackoverflow.com/a/36648428 for the ssh socket madness
-docker="sudo docker run --rm --name ansible-for-server -t -i -e ANSIBLE_KEEPASS_PSW=\"$password\" --mount type=bind,source=$keepass,target=/keepass.kdbx --mount type=bind,source=$SSH_AUTH_SOCK,target=/ssh-agent --env RASPBIAN_PASSWORD=\"$raspbianPassword\" --env SSH_AUTH_SOCK=/ssh-agent -v $currentFolder/ansible:/ansible:ro willhallonline/ansible:2.18-ubuntu-24.04 /bin/bash"
+docker="sudo docker run --rm --name ansible-for-server --hostname ansible-for-server -t -i -e ANSIBLE_KEEPASS_PSW=\"$password\" --mount type=bind,source=$keepass,target=/keepass.kdbx --mount type=bind,source=$SSH_AUTH_SOCK,target=/ssh-agent --env RASPBIAN_PASSWORD=\"$raspbianPassword\" --env SSH_AUTH_SOCK=/ssh-agent -v $currentFolder/ansible:/ansible:ro willhallonline/ansible:2.18-ubuntu-24.04 /bin/bash"
 
 echo $docker
 
