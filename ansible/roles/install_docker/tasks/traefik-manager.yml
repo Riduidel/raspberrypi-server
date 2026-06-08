@@ -48,5 +48,7 @@
       traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[2].replacement: "\"/traefik-manager/static/"
       traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[3].regex: "`/api/"
       traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[3].replacement: "`/traefik-manager/api/"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[4].regex: "\"/login"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[4].replacement: "\"/traefik-manager/login"
       traefik.http.middlewares.traefikManager-rewrite-location.plugin.redirectLocation.default: "true"
       traefik.http.middlewares.traefikManager.chain.middlewares: "traefikManager-rewrite-location,traefikManager-prefix,traefikManager-rewrite-body"

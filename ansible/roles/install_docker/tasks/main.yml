@@ -8,6 +8,9 @@
 - name: Install Traefik manager
   include_tasks: traefik-manager.yml
 
+- name: Install Portainer
+  include_tasks: portainer.yml
+
 - name: Make sure we have the .local/bin folder
   ansible.builtin.file:
     path: "{{local_bin_folder}}"

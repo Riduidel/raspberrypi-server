@@ -4,6 +4,7 @@ raspbian_version: bullseye
 
 mariadb_root_entry: "{{ lookup('torie_coding.keepass.lookup', 'entry', database=keepass_db, database_password=keepass_password, title='MariaDB root') }}"
 mariadb_wordpress_entry: "{{ lookup('torie_coding.keepass.lookup', 'entry', database=keepass_db, database_password=keepass_password, title='MariaDB Wordpress') }}"
+phpmysql_entry: "{{ lookup('torie_coding.keepass.lookup', 'entry', database=keepass_db, database_password=keepass_password, title='PHPMySql') }}"
 
 poecile_base_infos:
   email: veronique.delsaux@free.fr
