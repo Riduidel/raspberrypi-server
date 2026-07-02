@@ -1,0 +1,42 @@
+---
+- name: Make sure we have the traefik-manager folder
+  ansible.builtin.file:
+    path: "{{folders}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+  vars:
+    folders:
+    - "{{home_folder}}/kavita/libraries"
+    - "{{home_folder}}/kavita/config"
+
+- name: Install Kavita image
+  become: yes
+  community.docker.docker_container:
+    name: kavita
+    image: jvmilazz0/kavita:latest
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "bridge_to_the_internet"
+    ports:
+    user: "0:0"
+    env:
+      TZ: "Europe/Paris"
+    volumes:
+    - "{{home_folder}}/kavita/libraries:/libraries"
+    - "{{home_folder}}/kavita/config:/kavita/config"
+    labels: 
+      guerite.update: "{{guerite_crontab}}"
+      traefik.enable: "true"
+      traefik.http.services.kavita.loadbalancer.server.port: "5000"
+      traefik.http.routers.kavita.entrypoints: "websecure"
+      traefik.http.routers.kavita.tls: "true"
+      traefik.http.routers.kavita.tls.certresolver: "letsencrypt" 
+      traefik.http.routers.kavita.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/kavita`)"
+      traefik.http.routers.kavita.middlewares: "kavita@docker"
+      traefik.http.middlewares.kavita-prefix.stripprefix.prefixes: "/kavita"
+      traefik.http.middlewares.kavita-rewrite-body.plugin.rewritebody.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.kavita-rewrite-body.plugin.rewritebody.rewrites[0].replacement: "\"/kavita/"
+      traefik.http.middlewares.kavita-rewrite-location.plugin.redirectLocation.default: "true"
+      traefik.http.middlewares.kavita.chain.middlewares: "kavita-rewrite-location, kavita-rewrite-body, kavita-prefix"

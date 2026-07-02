@@ -1,5 +1,5 @@
 ---
-- name: Make sure we have the traefik-manager folder
+- name: Make sure we have the portainer folder
   ansible.builtin.file:
     path: "{{folders}}"
     state: directory
