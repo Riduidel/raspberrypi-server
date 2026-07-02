@@ -1,6 +1,17 @@
 ---
-- name: Install qBitTorrent
-  include_tasks: qbittorrent.yml
+- name: Install pykeepass
+  ansible.builtin.pip: 
+    name: pykeepass
+  delegate_to: localhost 
 
-- name: Configure shell
-  include_tasks: shell.yml
+- name: Install Komga
+  include_tasks: komga.yml
+
+- name: Install Transmission
+  include_tasks: transmission.yml
+
+- name: Install Universal Media Server
+  include_tasks: universalmediaserver.yaml
+
+#- name: Configure shell
+#  include_tasks: shell.yml

@@ -1,0 +1,54 @@
+---
+- name: Make sure we have the traefik-manager folder
+  ansible.builtin.file:
+    path: "{{folders}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+  vars:
+    folders:
+    - "{{home_folder}}/traefik-manager"
+    - "{{home_folder}}/traefik-manager/config"
+    - "{{home_folder}}/traefik-manager/backups"
+
+- name: Install traefik-manager
+  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_container:
+    name: traefik-manager
+    image: ghcr.io/chr0nzz/traefik-manager:latest
+    restart_policy: "unless-stopped"
+    ports:
+      - "5000:5000"
+    networks:
+      - name: "bridge_to_the_internet"
+    env:
+      COOKIE_SECURE: "true"
+      ACCESS_LOG_PATH: "/var/log/traefik/access.log"
+      STATIC_CONFIG_PATH: "/etc/traefik/traefik.yml"
+    volumes:
+      - "/etc/traefik.yml:/etc/traefik/traefik.yml"
+      - "/var/log:/var/log:rw"
+      - "{{home_folder}}/traefik-manager/config:/app/config"
+      - "{{home_folder}}/traefik-manager/backups:/app/backups"
+    labels:
+      guerite.update: "{{guerite_crontab}}"
+      traefik.enable: "true"
+      traefik.http.routers.traefikManager.entrypoints: "websecure"
+      traefik.http.routers.traefikManager.tls: "true"
+      traefik.http.routers.traefikManager.tls.certresolver: "letsencrypt" 
+      traefik.http.routers.traefikManager.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/traefik-manager`)"
+      traefik.http.routers.traefikManager.middlewares: "traefikManager@docker"
+      traefik.http.middlewares.traefikManager-prefix.stripprefix.prefixes: "/traefik-manager"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[0].regex: "\"/api/"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[0].replacement: "\"/traefik-manager/api/"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[1].regex: "'/api/"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[1].replacement: "'/traefik-manager/api/"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[2].regex: "\"/static/"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[2].replacement: "\"/traefik-manager/static/"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[3].regex: "`/api/"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[3].replacement: "`/traefik-manager/api/"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[4].regex: "\"/login"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[4].replacement: "\"/traefik-manager/login"
+      traefik.http.middlewares.traefikManager-rewrite-location.plugin.redirectLocation.default: "true"
+      traefik.http.middlewares.traefikManager.chain.middlewares: "traefikManager-rewrite-location,traefikManager-prefix,traefikManager-rewrite-body"

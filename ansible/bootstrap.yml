@@ -2,9 +2,10 @@
   become: true
 
   roles:
-    - install_public_key
-    - install_small_backup
+#    - install_public_key
+#    - install_small_backup
+#    - install_docker
     - install_apache
-    - install_software
-    - install_rrss2imap
-    - optimize_raspbian
+#    - install_software
+#    - install_rrss2imap
+#    - optimize_raspbian

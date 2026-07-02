@@ -1,0 +1,39 @@
+---
+- name: Install Docker system
+  include_tasks: docker.yml
+
+- name: Install Traefik
+  include_tasks: traefik.yml
+
+- name: Install Traefik manager
+  include_tasks: traefik-manager.yml
+
+- name: Install Portainer
+  include_tasks: portainer.yml
+
+- name: Make sure we have the .local/bin folder
+  ansible.builtin.file:
+    path: "{{local_bin_folder}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+
+- name: Install ctop
+  copy:
+    content: |
+      #!/bin/sh
+      docker run --rm -ti --name=ctop --volume /var/run/docker.sock:/var/run/docker.sock:ro  quay.io/vektorlab/ctop:latest
+    mode: '0750'
+    dest: "{{local_bin_folder}}/ctop"
+  become: true
+  become_user: "{{ansible_user}}"
+
+- name: Install Ponysay
+  copy:
+    content: |
+      #!/bin/sh
+      docker run -ti --rm mpepping/ponysay $@
+    mode: '0750'
+    dest: "{{local_bin_folder}}/ponysay"
+  become: true
+  become_user: "{{ansible_user}}"

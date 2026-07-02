@@ -5,12 +5,15 @@
   vars:
     packages:
     - sshpass
-    - yarn
     - git
     - acl
 
-- name: Install Apache/PHP
-  include_tasks: php.yml
+- name: Install pykeepass
+  ansible.builtin.pip: 
+    name: pykeepass
+  delegate_to: localhost 
+#- name: Remove Apache/PHP
+#  include_tasks: no_apache_php.yml
 
 - name: Add nicolas-delsaux user to www-data group
   user:
@@ -27,33 +30,20 @@
     mode: u=rwx,g=rwx,o=rwx
     recurse: yes
 
-- name: Make sure /var/log/apache2 is always present (because it is removed due to tmpfs)
-  cron:
-    name: Recreate apache log folder
-    special_time: reboot
-    job: "mkdir /var/log/apache2 && chown www-data:www-data /var/log/apache2"
-  become: yes
+- name: Install Shaarli
+  include_tasks: shaarli.yml
 
-
-- name: Create simple php template file
-  template:
-    src: index.php.j2
-    dest: /var/www/html/state.php
-    group: www-data
-    owner: www-data
-    mode: 0777
-
-#- name: Install Let's Encrypt
-#  include_tasks: letsencrypt.yml
-#
-#- name: Install Shaarli
-#  include_tasks: shaarli.yml
-#
-#- name: Install rss-bridge
-#  include_tasks: rss-bridge.yml
+- name: Install rss-bridge
+  include_tasks: rss-bridge.yml
 
 #- name: Install Tweetledee
 #  include_tasks: tweetledee.yml
 
 - name: Install mastodon-rss
   include_tasks: mastodon-rss.yml
+
+- name: Install wordpress
+  include_tasks: wordpress.yml
+
+#- name: Install grav
+#  include_tasks: grav.yml

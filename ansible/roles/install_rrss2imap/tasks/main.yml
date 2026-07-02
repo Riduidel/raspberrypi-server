@@ -28,7 +28,7 @@
     path: {{home_folder}}/rrss2imap/
     state: directory
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
   when: rss2imap_exists.stat.exists == False
 
 - name: Check if rrss2imap executable exists
@@ -62,7 +62,7 @@
     chdir: {{home_folder}}/rrss2imap
   when: config_exists.stat.exists == False
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
 
 - name: Prepare config backup
   file:
@@ -93,7 +93,7 @@
       - list
   register: rrss2imap_list
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
 
 - name: Import all OPML content (because config.json doesn't seems to contain anything)
   command:
@@ -105,7 +105,7 @@
       - r2e.opml
   when: rrss2imap_list.stdout==""
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
 
 - name: Create crontab entry to have feed entries
   cron:
@@ -114,7 +114,7 @@
     minute: "0"
     job: "cd {{home_folder}}/rrss2imap && ./rrss2imap_linux run > {{home_folder}}/rrss2imap/r2e.log 2>&1"
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"
 
 - name: Create crontab entry to backup feeds
   cron:
@@ -123,4 +123,4 @@
     minute: "0"
     job: "cd {{home_folder}}/rrss2imap/ && ./rrss2imap_linux export r2e.opml"
   become: yes
-  become_user: nicolas-delsaux
+  become_user: "{{ansible_user}}"

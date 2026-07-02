@@ -1,4 +1,4 @@
-# raspberrypi-server
+# home server
 
 Mon script Ansible pour initialiser mon Raspberry avec tout ce qui va bien dedans.
 
@@ -22,7 +22,8 @@ Entrer le mot de passe maître de Keepass
     mkdir /root/.ssh && ssh-keyscan -t rsa nicolas-delsaux.hd.free.fr > /root/.ssh/known_hosts
     cd /ansible
     ansible-galaxy install -r requirements.yml
-    ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" ansible_sudo_pass=\"$RASPBIAN_PASSWORD\" qnap_password=\"$QNAP_PASSWORD\""  --ask-vault-pass
+    ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" ansible_sudo_pass=\"$RASPBIAN_PASSWORD\" qnap_password=\"$QNAP_PASSWORD\" --ask-vault-pass
+
 
 ## Lancer avec Linux
 
@@ -35,11 +36,10 @@ Entrer le mot de passe maître de Keepass
 
     mkdir /root/.ssh && ssh-keyscan -t rsa nicolas-delsaux.hd.free.fr > /root/.ssh/known_hosts
     cd /ansible
-    ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" qnap_password=\"$QNAP_PASSWORD\"" --ask-vault-pass
-
-## activer certbot
-
-    certbot --apache
+    ansible-galaxy install -r requirements.yml
+    ansible-galaxy collection install -r requirements.yml
+    echo "Fully configured, now running"
+    ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" ansible_sudo_pass=\"$RASPBIAN_PASSWORD\"" --ask-vault-pass
 
 ## Tracabilité
 

@@ -1,0 +1,42 @@
+---
+- name: Make sure we have the traefik-manager folder
+  ansible.builtin.file:
+    path: "{{folders}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+  vars:
+    folders:
+    - "{{home_folder}}/portainer"
+
+- name: Install portainer
+  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_container:
+    image: "portainer/portainer-ce:latest"
+    name: portainer
+    restart_policy: "unless-stopped"
+    networks:
+      - name: "bridge_to_the_internet"
+#    security_opt:
+#      - "no-new-privileges:true"
+    ports:
+      - "9443:9000"
+#    command: -H unix:///var/run/docker.sock
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "{{home_folder}}/portainer:/data"
+    labels:
+      guerite.update: "{{guerite_crontab}}"
+      traefik.enable: "true"
+      traefik.http.services.portainer.loadbalancer.server.port: "9000"
+      traefik.http.routers.portainer.entrypoints: "websecure"
+      traefik.http.routers.portainer.tls: "true"
+      traefik.http.routers.portainer.tls.certresolver: "letsencrypt" 
+      traefik.http.routers.portainer.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/portainer`)"
+      traefik.http.routers.portainer.middlewares: "portainer@docker"
+      traefik.http.middlewares.portainer-rewrite-body.plugin.rewritebody.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.portainer-rewrite-body.plugin.rewritebody.rewrites[0].replacement: "\"/portainer"
+      traefik.http.middlewares.portainer-prefix.stripprefix.prefixes: "/portainer"
+      traefik.http.middlewares.portainer-rewrite-location.plugin.redirectLocation.default: "true"
+      traefik.http.middlewares.portainer.chain.middlewares: "portainer-rewrite-location,portainer-prefix,portainer-rewrite-body"
