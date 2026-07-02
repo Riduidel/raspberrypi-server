@@ -8,6 +8,7 @@
   vars:
     folders:
     - "{{home_folder}}/mariadb"
+    - "{{home_folder}}/poecile"
 
 - name: Install MariaDB
   become: yes
@@ -30,6 +31,10 @@
       MARIADB_PASSWORD: "{{mariadb_wordpress_entry.password}}"
     volumes:
       - "{{home_folder}}/mariadb:/bitnami/mariadb"
+    labels: 
+    # Of course I want to have that container auto-updated
+      guerite.update: "{{guerite_crontab}}"
+      traefik.enable: "false"
 
 - name: Install PhpMyAdmin
   become: yes
@@ -116,3 +121,28 @@
       - /var/www/html/wordpress/plugins/:/var/www/wordpress/plugins/
     links:
       - mariadb:mariadb
+
+- name: Install Wordpress backup
+  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_container:
+    name: poecile-backup
+    # https://hub.docker.com/r/aveltens/wordpress-backup/
+    image: aveltens/wordpress-backup:latest
+    state: started
+    restart_policy: unless-stopped
+    hostname: blog
+    networks:
+      - name: "bridge_to_the_internet"
+    volumes_from: poecile
+    volumes:
+      - "{{home_folder}}/poecile:/backups"
+    links:
+      - mariadb:mariadb
+    env:
+      BACKUP_TIME: "0 2 * * * "
+      CLEANUP_OLDER_THAN: "5"
+      MYSQL_ENV_MYSQL_USER: "{{mariadb_wordpress_entry.username}}"
+      MYSQL_ENV_MYSQL_PASSWORD: "{{mariadb_wordpress_entry.password}}"
+      MYSQL_ENV_MYSQL_HOST: "mariadb"
+      MYSQL_ENV_MYSQL_DATABASE: "poecile"
