@@ -11,6 +11,9 @@
 - name: Install Portainer
   include_tasks: portainer.yml
 
+- name: Install Trala
+  include_tasks: trala.yml
+
 - name: Make sure we have the .local/bin folder
   ansible.builtin.file:
     path: "{{local_bin_folder}}"

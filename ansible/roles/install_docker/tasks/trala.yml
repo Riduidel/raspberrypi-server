@@ -1,0 +1,51 @@
+---
+- name: Make sure we have the portainer folder
+  ansible.builtin.file:
+    path: "{{folders}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+  vars:
+    folders:
+    - "{{home_folder}}/trala"
+
+#- name: Generate trala config from template
+#  copy:
+#    src: trala"
+#    dest: "{{home_folder}}/trala"
+#    mode: u=rw,g=r,o=r
+#    force: true
+#  become: yes
+#  become_user: "{{ansible_user}}"
+
+- name: Install trala
+  become: yes
+  become_user: "{{ansible_user}}"
+  community.docker.docker_container:
+    name: trala
+    image: ghcr.io/dannybouwers/trala:latest
+    state: started
+    restart_policy: unless-stopped
+    # Yes I run it as root
+    user: 0:0
+    hostname: trala
+    volumes:
+      - "~/trala/:/config/"
+    links:
+      - "traefik:traefik"
+#    network_mode: host
+    networks:
+      - name: "bridge_to_the_internet"
+    env:
+      TRAEFIK_API_HOST: http://traefik:8080
+      SEARCH_ENGINE_URL: https://noai.duckduckgo.com/?q=
+      LANGUAGE: fr
+    labels: 
+    # Of course I want to have that container auto-updated
+      guerite.update: "{{guerite_crontab}}"
+      traefik.enable: "true"
+      traefik.http.routers.trala.entrypoints: "websecure"
+      traefik.http.routers.trala.tls: "true"
+      traefik.http.routers.trala.tls.certresolver: "letsencrypt" 
+      traefik.http.routers.trala.rule: "Host(`nicolas-delsaux.hd.free.fr`)"
+#      traefik.http.services.trala.loadbalancer.server.port: "8000"
