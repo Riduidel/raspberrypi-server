@@ -9,14 +9,14 @@
     folders:
     - "{{home_folder}}/trala"
 
-#- name: Generate trala config from template
-#  copy:
-#    src: trala"
-#    dest: "{{home_folder}}/trala"
-#    mode: u=rw,g=r,o=r
-#    force: true
-#  become: yes
-#  become_user: "{{ansible_user}}"
+- name: Generate trala config from template
+  copy:
+    src: trala/
+    dest: "{{home_folder}}/trala"
+    mode: u=rw,g=r,o=r
+    force: true
+  become: yes
+  become_user: "{{ansible_user}}"
 
 - name: Install trala
   become: yes

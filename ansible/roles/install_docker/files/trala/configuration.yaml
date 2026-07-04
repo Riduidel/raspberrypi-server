@@ -1,8 +1,0 @@
-# TraLa Configuration File
-version: 3.3
-
-services:
-  exclude:
-    routers:
-      - "mariadb"
-      - "phpmyadmin"
