@@ -1,0 +1,48 @@
+# traefik.yml
+api:
+  insecure: true
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "admin@nicolas-delsaux.hd.free.fr"  # Email pour les notifications
+      storage: /etc/traefik/acme.json   # Où stocker les certificats
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entryPoint: web                 # Entrypoint pour le challenge HTTP
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+    http:
+      tls: true
+providers:
+  docker: {}
+log:
+  filePath: "/var/log/traefik/standard.log"
+  level: INFO
+  compress: true
+accessLog:
+  filePath: "/var/log/traefik/access.log"
+  # JSON format
+  format: json
+experimental:
+  plugins:
+    redirectLocation:
+      modulename: "github.com/SchmitzDan/traefik-plugin-redirect-location"
+      version: "v0.0.1" #replace with newest version
+    rewriteHeaders:
+      modulename: "github.com/XciD/traefik-plugin-rewrite-headers"
+      version: "v0.0.4"
+    rewritebody:
+        moduleName: "github.com/traefik/plugin-rewritebody"
+        version: "v0.3.1"
+    fullUrlRewrite:
+      moduleName: "github.com/e-flux-platform/full-url-rewrite-traefik-plugin"
+      version: "v0.0.6"
