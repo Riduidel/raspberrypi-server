@@ -4,14 +4,14 @@
     name: pykeepass
   delegate_to: localhost 
 
-- name: Install Komga
-  include_tasks: komga.yml
+- name: Install Kavita
+  include_tasks: kavita.yml
 
 - name: Install Transmission
   include_tasks: transmission.yml
 
-- name: Install Universal Media Server
-  include_tasks: universalmediaserver.yaml
+- name: Install nextcp2
+  include_tasks: nextcp2.yaml
 
 #- name: Configure shell
 #  include_tasks: shell.yml

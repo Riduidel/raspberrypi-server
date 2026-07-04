@@ -1,0 +1,22 @@
+# TraLa Configuration File
+version: 3.3
+
+services:
+  exclude:
+    routers:
+      - "mariadb"
+      - "phpmyadmin"
+      - "traefik"
+  overrides:
+    - service: "mastodon -rss"
+      display_name: "Mastodon to RSS"
+#      icon: "ubiquiti-unifi.svg"
+      group: "RSS"
+    - service: "kavita"
+      group: "Media"
+    - service: "komga"
+      group: "Media"
+    - service: "transmission"
+      group: "Media"
+    - service: "nextcp2"
+      group: "Media"
