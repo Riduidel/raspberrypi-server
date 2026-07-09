@@ -9,10 +9,12 @@ read -p "Quel est le mot de passe de '$keepass'?: " password
 stty echo
 printf '\n'
 
+serverPassword=$(echo "$password" | keepassxc-cli show $keepass "Minidell" --show-protected --quiet --attributes "password")
+
 currentFolder=${PWD}
 # Finally start the docker image!
 # See https://stackoverflow.com/a/36648428 for the ssh socket madness
-docker="docker run --replace --rm --name ansible-for-server --hostname ansible-for-server -t -i -e ANSIBLE_KEEPASS_PSW=\"$password\" --mount type=bind,source=$keepass,target=/keepass.kdbx --mount type=bind,source=$SSH_AUTH_SOCK,target=/ssh-agent --env RASPBIAN_PASSWORD=\"$raspbianPassword\" --env SSH_AUTH_SOCK=/ssh-agent -v $currentFolder/ansible:/ansible:ro willhallonline/ansible:2.18-ubuntu-24.04 /bin/bash"
+docker="docker run --replace --rm --name ansible-for-server --hostname ansible-for-server -t -i -e ANSIBLE_KEEPASS_PSW=\"$password\" --mount type=bind,source=$keepass,target=/keepass.kdbx --mount type=bind,source=$SSH_AUTH_SOCK,target=/ssh-agent --env SERRVER_PASSWORD=\"$serverPassword\" --env SSH_AUTH_SOCK=/ssh-agent -v $currentFolder/ansible:/ansible:ro willhallonline/ansible:2.18-ubuntu-24.04 /bin/bash"
 
 echo $docker
 
