@@ -37,3 +37,6 @@
       - "~/.config/traefik/letsencrypt:/letsencrypt"
     labels:
       guerite.update: "{{guerite_crontab}}"
+# Option added for traefik to see nextcp2 container running on host network
+    etc_hosts:
+      host.docker.internal: "host-gateway"
