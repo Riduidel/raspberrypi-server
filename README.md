@@ -10,21 +10,6 @@ Le raspberry doit avoir
 * Le mot de passe pi changé
 * La connexion SSH au QNAP doit se faire sans mot de passe
 
-## Lancer avec Windows
-
-Il faut d'abord installer Docker.
-A la racine du projet, lancer la commande **dans PowerShell**
-
-    ansible.ps1
-
-Entrer le mot de passe maître de Keepass
-
-    mkdir /root/.ssh && ssh-keyscan -t rsa nicolas-delsaux.hd.free.fr > /root/.ssh/known_hosts
-    cd /ansible
-    ansible-galaxy install -r requirements.yml
-    ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" ansible_sudo_pass=\"$RASPBIAN_PASSWORD\" qnap_password=\"$QNAP_PASSWORD\" --ask-vault-pass
-
-
 ## Lancer avec Linux
 
 Il faut d'abord installer Docker.
@@ -39,7 +24,7 @@ Entrer le mot de passe maître de Keepass
     ansible-galaxy install -r requirements.yml
     ansible-galaxy collection install -r requirements.yml
     echo "Fully configured, now running"
-    ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$RASPBIAN_PASSWORD\" ansible_sudo_pass=\"$RASPBIAN_PASSWORD\"" --ask-vault-pass
+    ansible-playbook -i hosts bootstrap.yml --extra-vars="ansible_password=\"$SERVER_PASSWORD\" ansible_sudo_pass=\"$SERVER_PASSWORD\"" --ask-vault-pass
 
 ## Tracabilité
 
