@@ -10,8 +10,5 @@
 - name: Install Transmission
   include_tasks: transmission.yml
 
-- name: Install nextcp2
-  include_tasks: nextcp2.yaml
-
 #- name: Configure shell
 #  include_tasks: shell.yml
