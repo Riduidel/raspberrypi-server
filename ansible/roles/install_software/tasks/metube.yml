@@ -1,0 +1,42 @@
+---
+- name: Make sure we have the metube folder
+  ansible.builtin.file:
+    path: "{{folders}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+  vars:
+    folders:
+    - "{{home_folder}}/metube"
+
+- name: Install metube image
+  become: yes
+  community.docker.docker_container:
+    name: metube
+    image:  ghcr.io/alexta69/metube
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "bridge_to_the_internet"
+    ports:
+#    user: "0:0"
+    env:
+      TZ: "Europe/Paris"
+      URL_PREFIX: /metube
+    volumes:
+    - "{{home_folder}}/metube:/config"
+    - "{{home_folder}}/Downloads:/downloads"
+    labels: 
+      guerite.update: "{{guerite_crontab}}"
+      traefik.enable: "true"
+#      traefik.http.services.metube.loadbalancer.server.port: "3033"
+      traefik.http.routers.metube.entrypoints: "websecure"
+      traefik.http.routers.metube.tls: "true"
+      traefik.http.routers.metube.tls.certresolver: "letsencrypt" 
+      traefik.http.routers.metube.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/metube`)"
+#      traefik.http.routers.metube.middlewares: "metube@docker"
+      traefik.http.middlewares.metube-prefix.stripprefix.prefixes: "/metube"
+      traefik.http.middlewares.metube-rewrite-body.plugin.rewritebody.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.metube-rewrite-body.plugin.rewritebody.rewrites[0].replacement: "\"/metube/"
+      traefik.http.middlewares.metube-rewrite-location.plugin.redirectLocation.default: "true"
+#      traefik.http.middlewares.metube.chain.middlewares: "metube-rewrite-location, metube-rewrite-body, metube-prefix"

@@ -7,8 +7,14 @@
 - name: Install Kavita
   include_tasks: kavita.yml
 
+- name: Install BubbleUPnPServer
+  include_tasks: bubble.yml
+
 - name: Install Transmission
   include_tasks: transmission.yml
+
+- name: Install metube
+  include_tasks: metube.yml
 
 #- name: Configure shell
 #  include_tasks: shell.yml

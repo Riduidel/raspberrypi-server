@@ -1,5 +1,5 @@
 ---
-- name: Make sure we have the traefik-manager folder
+- name: Make sure we have the kavita folder
   ansible.builtin.file:
     path: "{{folders}}"
     state: directory
