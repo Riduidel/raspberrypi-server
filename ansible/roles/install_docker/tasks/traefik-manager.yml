@@ -11,7 +11,7 @@
     - "{{home_folder}}/traefik-manager/config"
     - "{{home_folder}}/traefik-manager/backups"
 
-- name: Install traefik-manager
+- name: Install traefik-manager 🐳
   become: yes
   become_user: "{{ansible_user}}"
   community.docker.docker_container:
@@ -26,6 +26,7 @@
       COOKIE_SECURE: "true"
       ACCESS_LOG_PATH: "/var/log/traefik/access.log"
       STATIC_CONFIG_PATH: "/etc/traefik/traefik.yml"
+      TRAEFIK_API_URL: "http://traefik:8080"
     volumes:
       - "/etc/traefik.yml:/etc/traefik/traefik.yml"
       - "/var/log:/var/log:rw"
@@ -40,15 +41,15 @@
       traefik.http.routers.traefikManager.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/traefik-manager`)"
       traefik.http.routers.traefikManager.middlewares: "traefikManager@docker"
       traefik.http.middlewares.traefikManager-prefix.stripprefix.prefixes: "/traefik-manager"
-      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[0].regex: "\"/api/"
-      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[0].replacement: "\"/traefik-manager/api/"
-      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[1].regex: "'/api/"
-      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[1].replacement: "'/traefik-manager/api/"
-      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[2].regex: "\"/static/"
-      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[2].replacement: "\"/traefik-manager/static/"
-      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[3].regex: "`/api/"
-      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[3].replacement: "`/traefik-manager/api/"
-      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[4].regex: "\"/login"
-      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewritebody.rewrites[4].replacement: "\"/traefik-manager/login"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewrite-body.rewrites[0].regex: >-
+        (["'\x60])/(api|login|static)
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewrite-body.rewrites[0].replacement: >-
+        ${1}/traefik-manager/${2}
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewrite-body.monitoring.methods[0]: "GET"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewrite-body.monitoring.types[0]: "text/html"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewrite-body.monitoring.types[1]: "application/javascript"
+      traefik.http.middlewares.traefikManager-rewrite-body.plugin.rewrite-body.monitoring.types[2]: "*/*"
       traefik.http.middlewares.traefikManager-rewrite-location.plugin.redirectLocation.default: "true"
-      traefik.http.middlewares.traefikManager.chain.middlewares: "traefikManager-rewrite-location,traefikManager-prefix,traefikManager-rewrite-body"
+      traefik.http.middlewares.traefikManager-headers.headers.customresponseheaders.X-deployed-by-ansible: "v6"
+      traefik.http.middlewares.traefikManager.chain.middlewares: "traefikManager-rewrite-location,traefikManager-prefix,traefikManager-rewrite-body, traefikManager-headers"
+    restart: true

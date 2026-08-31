@@ -16,5 +16,11 @@
 - name: Install metube
   include_tasks: metube.yml
 
+- name: Install handbrake
+  include_tasks: handbrake.yml
+
+- name: Install gerbera
+  include_tasks: gerbera.yml
+
 #- name: Configure shell
 #  include_tasks: shell.yml

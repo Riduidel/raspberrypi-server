@@ -1,0 +1,41 @@
+---
+- name: Make sure we have the gerbera folder
+  ansible.builtin.file:
+    path: "{{folders}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+  vars:
+    folders:
+    - "{{home_folder}}/gerbera/config"
+    - "{{home_folder}}/freebox"
+
+- name: Install Gerbera image
+  become: yes
+  community.docker.docker_container:
+    name: gerbera
+    image: gerbera/gerbera:edge-transcoding
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+#    networks:
+#      - name: "bridge_to_the_internet"
+    ports:
+      - "49494/tcp"
+    volumes:
+    - "{{home_folder}}/gerbera/config:/var/run/gerbera"
+    - "{{home_folder}}/freebox:/mnt/content:ro"
+    labels: 
+      guerite.update: "{{guerite_crontab}}"
+#      traefik.enable: "true"
+#      traefik.http.services.gerbera.loadbalancer.server.port: "5000"
+#      traefik.http.routers.gerbera.entrypoints: "websecure"
+#      traefik.http.routers.gerbera.tls: "true"
+#      traefik.http.routers.gerbera.tls.certresolver: "letsencrypt" 
+#      traefik.http.routers.gerbera.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/gerbera`)"
+#      traefik.http.routers.gerbera.middlewares: "gerbera@docker"
+#      traefik.http.middlewares.gerbera-prefix.stripprefix.prefixes: "/gerbera"
+#      traefik.http.middlewares.gerbera-rewrite-body.plugin.rewrite-body.rewrites[0].regex: "\"/"
+#      traefik.http.middlewares.gerbera-rewrite-body.plugin.rewrite-body.rewrites[0].replacement: "\"/gerbera/"
+#      traefik.http.middlewares.gerbera-rewrite-location.plugin.redirectLocation.default: "true"
+#      traefik.http.middlewares.gerbera.chain.middlewares: "gerbera-rewrite-location, gerbera-rewrite-body, gerbera-prefix"

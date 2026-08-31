@@ -1,5 +1,5 @@
 ---
-- name: Make sure we have the portainer folder
+- name: Make sure we have the trala folder
   ansible.builtin.file:
     path: "{{folders}}"
     state: directory
@@ -18,7 +18,7 @@
   become: yes
   become_user: "{{ansible_user}}"
 
-- name: Install trala
+- name: Install trala 🐳
   become: yes
   become_user: "{{ansible_user}}"
   community.docker.docker_container:

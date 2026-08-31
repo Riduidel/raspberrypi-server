@@ -8,9 +8,9 @@
 - name: Install Traefik manager
   include_tasks: traefik-manager.yml
 
-- name: Install Portainer
-  include_tasks: portainer.yml
-
+#- name: Install Portainer
+#  include_tasks: portainer.yml
+#
 - name: Install Trala
   include_tasks: trala.yml
 

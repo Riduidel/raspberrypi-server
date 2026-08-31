@@ -1,0 +1,75 @@
+---
+- name: Make sure we have the handbrake folder
+  ansible.builtin.file:
+    path: "{{folders}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+  vars:
+    folders:
+    - "{{home_folder}}/handbrake/config"
+    - "{{home_folder}}/handbrake/data"
+    - "{{home_folder}}/handbrake/video"
+    - "{{home_folder}}/Downloads"
+    - "{{home_folder}}/freebox"
+
+- name: Install handbrake web image
+  become: yes
+  community.docker.docker_container:
+    name: handbrake-web-server
+    image: ghcr.io/thenickoftime/handbrake-web-server:latest
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "bridge_to_the_internet"
+    user: "0:0"
+    env:
+    volumes:
+    - "{{home_folder}}/handbrake/data:/data:rw"
+    - "{{home_folder}}/Download:/video/input:rw"
+    - "{{home_folder}}/freebox:/video/output:rw"
+    labels: 
+      guerite.update: "{{guerite_crontab}}"
+      traefik.enable: "true"
+      traefik.http.services.handbrake.loadbalancer.server.port: "9999"
+      traefik.http.routers.handbrake.entrypoints: "websecure"
+      traefik.http.routers.handbrake.tls: "true"
+      traefik.http.routers.handbrake.tls.certresolver: "letsencrypt" 
+      traefik.http.routers.handbrake.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/handbrake`)"
+      traefik.http.routers.handbrake.middlewares: "handbrake@docker"
+      traefik.http.middlewares.handbrake-prefix.stripprefix.prefixes: "/handbrake"
+      traefik.http.middlewares.handbrake-rewrite-location.plugin.redirectLocation.default: "true"
+      traefik.http.middlewares.handbrake-rewrite-body.plugin.rewrite-body.rewrites[0].regex: >-
+        (assets|socket.io)
+      traefik.http.middlewares.handbrake-rewrite-body.plugin.rewrite-body.rewrites[0].replacement: >-
+        handbrake/${1}
+      traefik.http.middlewares.handbrake-rewrite-body.plugin.rewrite-body.monitoring.methods[0]: "GET"
+      traefik.http.middlewares.handbrake-rewrite-body.plugin.rewrite-body.monitoring.types[0]: "text/html"
+      traefik.http.middlewares.handbrake-rewrite-body.plugin.rewrite-body.monitoring.types[1]: "text/javascript"
+      traefik.http.middlewares.handbrake-rewrite-body.plugin.rewrite-body.monitoring.types[2]: "application/javascript"
+      traefik.http.middlewares.handbrake-rewrite-body.plugin.rewrite-body.monitoring.types[3]: "text/css"
+      traefik.http.middlewares.handbrake-rewrite-body.plugin.rewrite-body.monitoring.types[4]: "*/*"
+      traefik.http.middlewares.handbrake-headers.headers.customresponseheaders.X-deployed-by-ansible: "v3"
+      traefik.http.middlewares.handbrake.chain.middlewares: "handbrake-rewrite-location, handbrake-prefix, handbrake-rewrite-body, handbrake-headers"
+
+- name: Install handbrake server image
+  become: yes
+  community.docker.docker_container:
+    name: handbrake-web-worker
+    image: ghcr.io/thenickoftime/handbrake-web-worker:latest
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "bridge_to_the_internet"
+    user: "0:0"
+    env:
+      WORKER_ID: "handbrake-worker" # give your worker a unique name
+      SERVER_URL: "handbrake-web-server" # change if setting up a standalone worker, prefix with http(s):// if necessary
+      SERVER_PORT: "9999" # change if using a reverse proxy or the port is otherwise different than above
+    volumes:
+    - "{{home_folder}}/handbrake/data:/data"
+    - "{{home_folder}}/handbrake/video:/video"
+    - "{{home_folder}}/Downloads:/watch"
+    - "{{home_folder}}/freebox:/output"
+    labels: 
+      guerite.update: "{{guerite_crontab}}"

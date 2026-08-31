@@ -36,7 +36,10 @@
       traefik.http.routers.kavita.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/kavita`)"
 #      traefik.http.routers.kavita.middlewares: "kavita@docker"
       traefik.http.middlewares.kavita-prefix.stripprefix.prefixes: "/kavita"
-      traefik.http.middlewares.kavita-rewrite-body.plugin.rewritebody.rewrites[0].regex: "\"/"
-      traefik.http.middlewares.kavita-rewrite-body.plugin.rewritebody.rewrites[0].replacement: "\"/kavita/"
+      traefik.http.middlewares.kavita-rewrite-body.plugin.rewrite-body.rewrites[0].regex: "\"/"
+      traefik.http.middlewares.kavita-rewrite-body.plugin.rewrite-body.rewrites[0].replacement: "\"/kavita/"
       traefik.http.middlewares.kavita-rewrite-location.plugin.redirectLocation.default: "true"
 #      traefik.http.middlewares.kavita.chain.middlewares: "kavita-rewrite-location, kavita-rewrite-body, kavita-prefix"
+
+# Hey future me ! Kavita appsettings.json must contain this line
+#  "BaseUrl": "/kavita/",
