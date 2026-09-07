@@ -24,6 +24,7 @@
     env:
       TZ: "Europe/Paris"
       URL_PREFIX: /metube
+      MAX_CONCURRENT_DOWNLOADS: "1"
     volumes:
     - "{{home_folder}}/metube/config:/config"
     - "{{home_folder}}/metube/downloads:/downloads"

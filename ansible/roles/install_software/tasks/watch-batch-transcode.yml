@@ -1,0 +1,37 @@
+---
+- name: Make sure we have the watch-batch-transcode folder
+  ansible.builtin.file:
+    path: "{{folders}}"
+    state: directory
+  become: true
+  become_user: "{{ansible_user}}"
+  vars:
+    folders:
+    - "{{home_folder}}/watch-batch-transcode/config"
+    - "{{home_folder}}/watch-batch-transcode/data"
+    - "{{home_folder}}/watch-batch-transcode/failed"
+    - "{{home_folder}}/Downloads"
+    - "{{home_folder}}/freebox"
+
+- name: Install watch-batch-transcode image 🐳
+  become: yes
+  community.docker.docker_container:
+    name: watch-batch-transcode
+    image: ignis621/watch-batch-transcode
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "bridge_to_the_internet"
+    user: "0:0"
+    env:
+      VIDEO_CODEC: "libx264"
+      VIDEO_CRF:	"21"
+    volumes:
+    - "{{home_folder}}/watch-batch-transcode/data:/sources_processed:rw"
+    - "{{home_folder}}/Download:/sources:rw"
+    - "{{home_folder}}/freebox:/completed:rw"
+    - "{{home_folder}}/watch-batch-transcode/failed:/failed:rw"
+    labels: 
+      guerite.update: "{{guerite_crontab}}"
+      traefik.enable: "true"
+    restart: true

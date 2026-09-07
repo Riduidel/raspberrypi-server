@@ -66,10 +66,21 @@
       traefik.http.routers.Shaarli.rule: "Host(`nicolas-delsaux.hd.free.fr`) && PathPrefix(`/Shaarli`)"
       traefik.http.routers.Shaarli.middlewares: "Shaarli@docker"
       traefik.http.middlewares.Shaarli-prefix.stripprefix.prefixes: "/Shaarli"
-      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.rewrites[0].regex: "\"/"
-      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.rewrites[0].replacement: "\"/Shaarli/"
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.rewrites[0].regex: "https://nicolas-delsaux.hd.free.fr"
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.rewrites[0].replacement: ""
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.rewrites[1].regex: "\"/"
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.rewrites[1].replacement: "\"/Shaarli/"
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.monitoring.methods[0]: "GET"
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.monitoring.types[0]: "text/html"
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.monitoring.types[1]: "text/javascript"
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.monitoring.types[2]: "application/javascript"
+#      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.monitoring.types[3]: "application/atom+xml"
+#      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.monitoring.types[4]: "application/rss+xml"
+      traefik.http.middlewares.Shaarli-rewrite-body.plugin.rewrite-body.monitoring.types[5]: "*/*"
+      traefik.http.middlewares.Shaarli-headers.headers.customresponseheaders.X-deployed-by-ansible: "v3"
       traefik.http.middlewares.Shaarli-rewrite-location.plugin.redirectLocation.default: "true"
       traefik.http.middlewares.Shaarli.chain.middlewares: "Shaarli-rewrite-body,Shaarli-prefix,Shaarli-rewrite-location"
     volumes:
       - /var/www/html/Shaarli/data:/var/www/shaarli/data 
       - /var/www/html/Shaarli/plugins/:/var/www/shaarli/plugins/
+    restart: true

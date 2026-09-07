@@ -10,6 +10,14 @@
     - "{{home_folder}}/gerbera/config"
     - "{{home_folder}}/freebox"
 
+- name: Copy configuration file
+  become: true
+  become_user: "{{ansible_user}}"
+  copy:
+    src: gerbera/config.xml
+    dest: "{{home_folder}}/gerbera/config.xml"
+
+
 - name: Install Gerbera image
   become: yes
   community.docker.docker_container:

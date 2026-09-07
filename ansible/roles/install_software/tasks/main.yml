@@ -15,9 +15,12 @@
 
 - name: Install metube
   include_tasks: metube.yml
+#
+#- name: Install handbrake
+#  include_tasks: handbrake.yml
 
-- name: Install handbrake
-  include_tasks: handbrake.yml
+- name: Install watch-batch-transcode
+  include_tasks: watch-batch-transcode.yml
 
 - name: Install gerbera
   include_tasks: gerbera.yml
