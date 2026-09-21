@@ -26,6 +26,8 @@
     env:
       VIDEO_CODEC: "libx264"
       VIDEO_CRF:	"21"
+      OVERRIDE_ENCODE_ARGS: >-
+        -c:v libx264 -preset veryslow -crf 20 -vf scale=1280:720 -c:a copy
     volumes:
     - "{{home_folder}}/watch-batch-transcode/data:/sources_processed:rw"
     - "{{home_folder}}/Download:/sources:rw"
